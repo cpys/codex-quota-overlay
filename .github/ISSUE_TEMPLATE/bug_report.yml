@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a reproducible problem with the Windows overlay
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include tokens, account data, conversation content, complete App Server responses, or your telemetry installation UUID.
+  - type: input
+    id: overlay-version
+    attributes:
+      label: Overlay version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: codex-version
+    attributes:
+      label: Codex desktop version
+    validations:
+      required: true
+  - type: input
+    id: windows-version
+    attributes:
+      label: Windows version and display scaling
+      placeholder: Windows 11 24H2, 150%
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true

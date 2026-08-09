@@ -1,0 +1,14 @@
+{
+  "name": "codex-quota-overlay-telemetry",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 execute codex-quota-overlay-telemetry --local --file schema.sql",
+    "db:remote": "wrangler d1 execute codex-quota-overlay-telemetry --remote --file schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

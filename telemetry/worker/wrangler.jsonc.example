@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "codex-quota-overlay-telemetry",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-09",
+  "workers_dev": true,
+  "triggers": {
+    "crons": ["17 3 * * *"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "codex-quota-overlay-telemetry",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ]
+}

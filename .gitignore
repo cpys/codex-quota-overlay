@@ -1,0 +1,24 @@
+# Build outputs
+/artifacts/
+/build/
+/bin/
+/obj/
+/.vs/
+
+# Local settings and logs
+*.user
+*.suo
+*.log
+
+# Development screenshots (the curated screenshot lives under docs/images)
+/*.png
+
+# Telemetry worker
+/telemetry/worker/node_modules/
+/telemetry/worker/.wrangler/
+/telemetry/worker/wrangler.jsonc
+*.dev.vars
+
+# OS/editor files
+.DS_Store
+Thumbs.db
