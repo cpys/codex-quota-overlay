@@ -19,8 +19,8 @@
     "test:telemetry": "node --test telemetry/worker/test/*.test.js",
     "test:host": "node scripts/host-simulation.mjs",
     "smoke": "electron scripts/electron-smoke.cjs",
-    "dist:win": "npm run icon && npm run native && electron-builder --win dir --x64",
-    "dist:mac": "npm run icon && npm run native && electron-builder --mac dmg zip --x64 --arm64"
+    "dist:win": "npm run icon && npm run native && electron-builder --win dir --x64 --publish never",
+    "dist:mac": "npm run icon && npm run native && electron-builder --mac dmg zip --x64 --arm64 --publish never"
   },
   "devDependencies": {
     "electron": "43.3.0",
