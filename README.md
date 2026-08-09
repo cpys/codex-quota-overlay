@@ -6,6 +6,8 @@ Codex Quota Overlay is a lightweight Windows companion for the Codex desktop app
 
 ![Codex Quota Overlay](docs/images/preview.png)
 
+The screenshot keeps the real Codex window and overlay placement visible; unrelated workspace, conversation, and account content has been intentionally blurred for privacy.
+
 > [!IMPORTANT]
 > This is an independent community project. It is not affiliated with, endorsed by, or supported by OpenAI.
 

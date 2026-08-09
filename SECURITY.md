@@ -15,4 +15,5 @@ Do not publish exploitable details, tokens, account information, or private logs
 - It requests only rate-limit information and never calls the reset-credit consumption method.
 - The overlay is non-activating and click-through.
 - Telemetry is optional, consent-based, HTTPS-only, and excludes Codex/account data.
+- Pushes and pull requests are scanned for committed secrets across the complete Git history.
 - Release checksums are published. Until code signing is available, users should verify SHA-256 hashes and download only from this repository.

@@ -6,6 +6,8 @@ Codex 额度悬浮层是一个轻量的 Windows Codex 桌面伴侣。它会在�
 
 ![Codex 额度悬浮层](docs/images/preview.png)
 
+截图保留了真实的 Codex 窗口和悬浮层位置；与演示无关的工作区、会话和账户内容已为保护隐私而模糊处理。
+
 > [!IMPORTANT]
 > 这是独立的社区开源项目，与 OpenAI 没有隶属、授权或支持关系。
 
