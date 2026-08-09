@@ -9,31 +9,86 @@ permissions:
   contents: read
 
 jobs:
-  windows:
-    runs-on: windows-latest
-    timeout-minutes: 15
-
+  test:
+    name: Test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-14]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:host
+      - run: npm run native
+      - name: Verify universal macOS helper
+        if: runner.os == 'macOS'
+        run: |
+          test "$(lipo -archs build/native/macos/active-window-helper)" = "x86_64 arm64"
+          codesign --verify --verbose build/native/macos/active-window-helper
+      - run: npm run smoke
 
-      - name: Build and test
-        shell: pwsh
-        run: ./test.ps1
-
+  package-windows:
+    name: Package Windows
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
       - name: Ensure Inno Setup
         shell: pwsh
         run: |
           if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
             choco install innosetup --no-progress -y
           }
-
-      - name: Package
+      - name: Build installers
         shell: pwsh
         run: ./package.ps1 -SkipBuild
-
-      - name: Upload release candidates
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: codex-quota-overlay-windows
-          path: artifacts/release/*
+          path: |
+            artifacts/release/CodexQuotaOverlay-Windows-Setup-*-x64.exe
+            artifacts/release/CodexQuotaOverlay-Windows-Portable-*-x64.zip
+            artifacts/release/SHA256SUMS-Windows-*.txt
+          if-no-files-found: error
+
+  package-macos:
+    name: Package macOS
+    runs-on: macos-14
+    timeout-minutes: 30
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run dist:mac
+      - name: Verify packages and checksums
+        run: |
+          version="$(tr -d '\r\n' < VERSION)"
+          mkdir -p artifacts/release-macos
+          cp artifacts/electron/CodexQuotaOverlay-mac-*.dmg artifacts/release-macos/
+          cp artifacts/electron/CodexQuotaOverlay-mac-*.zip artifacts/release-macos/
+          cd artifacts/release-macos
+          shasum -a 256 CodexQuotaOverlay-mac-* > "SHA256SUMS-macOS-${version}.txt"
+          test "$(find . -name '*.dmg' | wc -l | tr -d ' ')" = "2"
+          test "$(find . -name '*.zip' | wc -l | tr -d ' ')" = "2"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codex-quota-overlay-macos
+          path: artifacts/release-macos/*
           if-no-files-found: error

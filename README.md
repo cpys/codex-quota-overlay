@@ -1,100 +1,115 @@
-# Codex Quota Overlay for Windows
+# Codex Quota Overlay (Windows / macOS)
 
-[简体中文](README.zh-CN.md) · [Download](https://github.com/cpys/codex-quota-overlay/releases/latest) · [Privacy](PRIVACY.md)
+[简体中文](README.zh-CN.md) · [Download](https://github.com/cpys/codex-quota-overlay/releases) · [Privacy](PRIVACY.md)
 
-Codex Quota Overlay is a lightweight Windows companion for the Codex desktop app. It places the current quota, next reset time, and available reset credits beside the active conversation title, then disappears as soon as Codex is no longer the foreground app.
+Codex Quota Overlay shows the remaining quota, next reset time, and available reset credits on one line beside the current Codex conversation title. It disappears immediately when Codex is no longer active.
 
 ![Codex Quota Overlay](docs/images/preview.png)
 
-The screenshot keeps the real Codex window and overlay placement visible; unrelated workspace, conversation, and account content has been intentionally blurred for privacy.
+The screenshot preserves the real Codex window and overlay placement. Unrelated workspace, conversation, and account content is blurred, and the original screenshot is not committed.
 
 > [!IMPORTANT]
 > This is an independent community project. It is not affiliated with, endorsed by, or supported by OpenAI.
 
 ## Features
 
-- Shows the remaining Codex quota and next reset time on one line.
-- Shows the number and expiration time of available reset credits when provided.
-- Appears only while the Codex desktop window is active.
-- Never takes focus and lets mouse input pass through to Codex.
-- Supports per-monitor DPI, minimized windows, multiple displays, and a single running instance.
-- Provides tray actions for refresh, startup, updates, privacy information, and exit.
-- Reads quota through the documented local Codex App Server JSON-RPC interface; it does not scrape pixels, inspect browser cookies, or consume reset credits.
-- Offers an optional, consent-based daily anonymous heartbeat. See [Privacy](PRIVACY.md).
+- Shows remaining quota and the next reset time on one line.
+- Shows reset-credit count and expiration times when the service provides them.
+- Appears only while Codex Desktop is active; switching apps, minimizing, or quitting Codex hides it.
+- Never takes focus and lets pointer input pass through to Codex.
+- Handles high-DPI displays, multiple monitors, single-instance execution, and login startup.
+- Provides refresh, placement adjustment, CLI selection, short diagnostics, privacy, and exit actions from the Windows tray or macOS menu bar.
+- Reads the documented local Codex App Server `account/rateLimits/read` method. It does not capture screenshots, read conversation titles or browser cookies, or consume reset credits.
+- Includes an optional anonymous daily heartbeat that is unconfigured by default and runs only after explicit opt-in. See [Privacy](PRIVACY.md).
 
-## Requirements
+## Support matrix
 
-- Windows 10 or Windows 11.
-- The Codex desktop app installed and signed in with a ChatGPT-managed account.
-- .NET Framework 4.8 (included with current supported Windows releases or available from Microsoft).
+| Platform | Status | Assets |
+| --- | --- | --- |
+| Windows 10/11 x64 | Verified on a physical Windows 11 host | Setup EXE, portable ZIP |
+| macOS 12+ Apple Silicon | Automated build and dual-architecture checks; physical-Mac acceptance pending | arm64 DMG, ZIP |
+| macOS 12+ Intel | Automated build and dual-architecture checks; physical-Mac acceptance pending | x64 DMG, ZIP |
 
-API-key-only and non-ChatGPT Codex configurations may not expose ChatGPT quota information.
+There is currently no official Codex Desktop app for Linux, so this project does not publish Linux packages. Linux users can use the official Codex CLI.
+
+A ChatGPT-managed Codex sign-in is required for ChatGPT quota data. API-key-only and other configurations may not expose this information.
 
 ## Install
 
-1. Open the [latest GitHub release](https://github.com/cpys/codex-quota-overlay/releases/latest).
-2. Download `CodexQuotaOverlay-Setup-<version>.exe`.
-3. Run the installer and optionally enable startup or a desktop shortcut.
-4. Launch Codex Quota Overlay. A `%` icon remains in the Windows notification area.
+### Windows
 
-The unsigned installer may initially trigger a Windows SmartScreen warning. Always compare its SHA-256 hash with `SHA256SUMS.txt` from the same release. Code signing is planned when a suitable certificate is available.
+1. Open [GitHub Releases](https://github.com/cpys/codex-quota-overlay/releases).
+2. Download `CodexQuotaOverlay-Windows-Setup-<version>-x64.exe`.
+3. Run the installer. It upgrades an existing 0.1.x installation in place.
+4. Launch the app; its icon remains in the notification area.
 
-A portable ZIP is also attached to each release. Extract it to a stable folder before enabling startup.
+The `CodexQuotaOverlay-Windows-Portable-<version>-x64.zip` asset can instead be extracted completely to a stable folder.
 
-## Use
+### macOS
 
-Keep Codex Quota Overlay running in the notification area. When Codex is the foreground app, the overlay is positioned beside the conversation title. Switching apps, minimizing Codex, or closing Codex hides it immediately.
+1. Download the `arm64.dmg` for Apple Silicon or the `x64.dmg` for an Intel Mac.
+2. Open the DMG and drag **Codex Quota Overlay** to Applications.
+3. The current preview is not notarized with an Apple Developer ID. On first launch, right-click the app in Finder, select **Open**, and confirm.
+4. The app appears only in the menu bar, not the Dock.
 
-Right-click the tray icon to:
+If it reports `E01`, choose **Codex CLI → Choose manually…** and select the local `codex` executable.
 
-- refresh quota now;
-- enable or disable startup;
-- control anonymous usage statistics when configured;
-- open privacy information or the releases page;
-- view the installed version or exit.
+> The Windows and macOS preview assets are not commercially code-signed. Download only from this repository and verify each asset against the matching `SHA256SUMS-*.txt` file.
 
-Logs containing only operational error summaries are stored at:
+## Use and short diagnostics
+
+Keep the app running in the tray or menu bar. If placement needs adjustment, move it vertically by 2 px or horizontally by 4 px from **Position adjustment**, or reset the defaults.
+
+Use **Copy short diagnostics** when reporting a problem. The result is at most 200 characters, for example:
 
 ```text
-%LOCALAPPDATA%\CodexQuotaOverlay\overlay.log
+E01 | Codex CLI not found
 ```
 
-The log does not contain account tokens or complete App Server responses.
+Diagnostics exclude usernames, hostnames, paths, accounts, IPs, installation IDs, conversation titles, tokens, and raw quota responses. Version 0.2.0 writes no operational log and offers no long diagnostic export. The last error exists only in memory until exit.
+
+Common codes:
+
+- `E01`: Codex CLI was not found; choose it manually from the menu.
+- `E02`–`E05`: local App Server start, initialization, read, or exit failure.
+- `W01` / `W02`: Codex is closed, inactive, or its window identity was not recognized.
+- `M01`: macOS did not return a usable Codex application identity or window boundary.
+
+## Privacy
+
+Quota data remains in local memory and is used only to render the overlay. The window probe reads the frontmost application identity and bounds while deliberately leaving the title field empty. It does not request screen recording to capture content and never stores screenshots or conversations.
+
+Settings are stored at:
+
+- Windows: `%LOCALAPPDATA%\CodexQuotaOverlay\settings.json`
+- macOS: `~/Library/Application Support/CodexQuotaOverlay/settings.json`
+
+See [Privacy](PRIVACY.md) for every local and optional network field.
 
 ## Build from source
 
-The dependency-free local build uses the .NET Framework compiler already present on Windows:
+Node.js 24 and npm are required.
 
 ```powershell
-.\build.ps1
-```
-
-The executable is written to `artifacts\bin`. Visual Studio 2022 users can also open `CodexQuotaOverlay.sln` and build the `net48` project.
-
-To build the installer, install [Inno Setup 6](https://jrsoftware.org/isinfo.php), then run:
-
-```powershell
+npm ci
+.\test.ps1
 .\package.ps1
 ```
 
-To run the source-level and parser smoke tests:
+The Windows installer also requires Inno Setup 6. macOS DMG/ZIP assets must be produced on macOS:
 
-```powershell
-.\test.ps1
+```bash
+npm ci
+npm test
+npm run dist:mac
 ```
 
-## Releases and versioning
+Tag pushes run Windows and macOS GitHub Actions jobs, package x64/arm64 assets, generate SHA-256 checksums, and create a Release only after both platforms succeed.
 
-The project uses semantic versioning. `VERSION`, assembly metadata, the installer, Git tags, and GitHub Releases must carry the same version. Pushing a tag such as `v0.1.0` runs the release workflow and publishes the installer, portable ZIP, and SHA-256 checksums.
+## Compatibility
 
-## Compatibility note
+Quota data comes from the documented [`account/rateLimits/read`](https://learn.chatgpt.com/docs/app-server#6-rate-limits-chatgpt) method. Codex changes quickly, and the parser treats optional fields defensively. Reports need only the overlay version, Codex version, and short diagnostic code—never account information or long logs.
 
-Quota data is read from the documented [`account/rateLimits/read`](https://learn.chatgpt.com/docs/app-server#6-rate-limits-chatgpt) method. Codex evolves quickly, so releases test against the then-current desktop build and treat missing optional fields defensively. Please include the Codex and overlay versions when reporting a compatibility issue.
+## Contributing and license
 
-## Contributing
-
-Bug reports and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md) first.
-
-## License
-
-[MIT](LICENSE)
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md) first. Licensed under the [MIT License](LICENSE).

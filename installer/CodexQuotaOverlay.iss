@@ -21,7 +21,7 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=..\LICENSE
 OutputDir=..\artifacts\release
-OutputBaseFilename=CodexQuotaOverlay-Setup-{#MyAppVersion}
+OutputBaseFilename=CodexQuotaOverlay-Windows-Setup-{#MyAppVersion}-x64
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
@@ -45,13 +45,7 @@ Name: "autostart"; Description: "Start when I sign in / 登录时自动启动"; 
 Name: "desktopicon"; Description: "Create a desktop shortcut / 创建桌面快捷方式"; GroupDescription: "Shortcuts / 快捷方式:"; Flags: unchecked
 
 [Files]
-Source: "..\artifacts\bin\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\artifacts\bin\{#MyAppExeName}.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\README.zh-CN.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\PRIVACY.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\PRIVACY.zh-CN.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\artifacts\electron\win-unpacked\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

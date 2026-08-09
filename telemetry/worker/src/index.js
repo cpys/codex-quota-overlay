@@ -12,13 +12,13 @@ function validString(value, min, max) {
   return typeof value === "string" && value.length >= min && value.length <= max;
 }
 
-function validateHeartbeat(body) {
+export function validateHeartbeat(body) {
   if (!body || typeof body !== "object") return "invalid JSON object";
   if (body.schemaVersion !== 1) return "unsupported schemaVersion";
   if (body.event !== "daily_active") return "unsupported event";
   if (!validString(body.installationId, 36, 36) || !/^[0-9a-f-]{36}$/i.test(body.installationId)) return "invalid installationId";
   if (!validString(body.appVersion, 5, 32) || !/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(body.appVersion)) return "invalid appVersion";
-  if (body.platform !== "windows") return "invalid platform";
+  if (!["windows", "macos"].includes(body.platform)) return "invalid platform";
   if (!validString(body.osVersion, 1, 48)) return "invalid osVersion";
   if (!validString(body.locale, 1, 32)) return "invalid locale";
   if (!validString(body.sentAt, 20, 40) || Number.isNaN(Date.parse(body.sentAt))) return "invalid sentAt";
@@ -57,15 +57,16 @@ async function heartbeat(request, env) {
 
   await env.DB.prepare(`
     INSERT INTO daily_active
-      (install_hash, active_day, app_version, os_version, locale, first_seen_at, last_seen_at, heartbeat_count)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+      (install_hash, active_day, app_version, platform, os_version, locale, first_seen_at, last_seen_at, heartbeat_count)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
     ON CONFLICT(install_hash, active_day) DO UPDATE SET
       app_version = excluded.app_version,
+      platform = excluded.platform,
       os_version = excluded.os_version,
       locale = excluded.locale,
       last_seen_at = excluded.last_seen_at,
       heartbeat_count = daily_active.heartbeat_count + 1
-  `).bind(installHash, activeDay, body.appVersion, body.osVersion, body.locale, now, now).run();
+  `).bind(installHash, activeDay, body.appVersion, body.platform, body.osVersion, body.locale, now, now).run();
 
   return reply(202, { ok: true });
 }

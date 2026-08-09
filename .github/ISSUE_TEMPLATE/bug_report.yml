@@ -1,16 +1,16 @@
 name: Bug report
-description: Report a reproducible problem with the Windows overlay
+description: Report a reproducible Windows or macOS overlay problem
 title: "[Bug]: "
 labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: Do not include tokens, account data, conversation content, complete App Server responses, or your telemetry installation UUID.
+      value: Do not include tokens, account data, conversation content, screenshots from a managed Mac, paths, settings files, raw App Server responses, or installation UUIDs. A short diagnostic code is sufficient.
   - type: input
     id: overlay-version
     attributes:
       label: Overlay version
-      placeholder: 0.1.0
+      placeholder: 0.2.0
     validations:
       required: true
   - type: input
@@ -20,12 +20,18 @@ body:
     validations:
       required: true
   - type: input
-    id: windows-version
+    id: os-version
     attributes:
-      label: Windows version and display scaling
-      placeholder: Windows 11 24H2, 150%
+      label: Operating system, architecture, and display scaling
+      placeholder: Windows 11 x64 at 150%, or macOS 15 arm64 at 2x
     validations:
       required: true
+  - type: input
+    id: diagnostic
+    attributes:
+      label: Short diagnostic code
+      description: Use Copy short diagnostics from the tray or menu bar. Do not attach a log file.
+      placeholder: E01 | Codex CLI not found
   - type: textarea
     id: steps
     attributes:

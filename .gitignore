@@ -1,6 +1,7 @@
 # Build outputs
 /artifacts/
 /build/
+/node_modules/
 /bin/
 /obj/
 /.vs/
@@ -22,3 +23,11 @@
 # OS/editor files
 .DS_Store
 Thumbs.db
+
+# Source-controlled generated application icon used by all package builders
+!/build/
+/build/*
+!/build/resources/
+/build/resources/*
+!/build/resources/icon.png
+!/build/resources/tray-template.png

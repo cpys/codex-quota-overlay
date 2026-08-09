@@ -6,16 +6,17 @@ Thank you for helping improve Codex Quota Overlay.
 
 - Confirm the issue still occurs with the latest overlay and Codex desktop versions.
 - Check existing issues.
-- Include Windows, Codex, and overlay versions plus clear reproduction steps.
-- Never post tokens, account details, complete App Server responses, conversation content, private file paths, or your telemetry installation UUID.
+- Include the operating system, Codex version, overlay version, and short diagnostic code plus clear reproduction steps.
+- Never post tokens, account details, complete App Server responses, conversation content, private file paths, settings files, or telemetry installation UUIDs.
 
 ## Development
 
-1. Fork and clone the repository on Windows.
+1. Fork and clone the repository on Windows or macOS.
 2. Create a focused branch.
-3. Run `./test.ps1` in PowerShell.
-4. For installer changes, install Inno Setup 6 and run `./package.ps1`.
-5. Keep English and Chinese user documentation aligned when behavior changes.
+3. Run `npm ci`, `npm test`, `npm run test:host`, and `npm run smoke`.
+4. On Windows, run `./test.ps1`; installer changes also require Inno Setup 6 and `./package.ps1`.
+5. On macOS, run `npm run native` and `npm run dist:mac` for packaging changes.
+6. Keep English and Chinese user documentation aligned when behavior changes.
 
 Prefer small, reviewable changes. New network access, persistence, startup behavior, or collected fields must include corresponding privacy and security documentation.
 
@@ -25,4 +26,4 @@ Prefer small, reviewable changes. New network access, persistence, startup behav
 - List the validation performed.
 - Add or update tests for parsing and compatibility changes.
 - Update `CHANGELOG.md` under `Unreleased`.
-- Do not commit build artifacts, local logs, credentials, production telemetry secrets, or private screenshots.
+- Do not commit build artifacts, credentials, production telemetry secrets, or private screenshots.

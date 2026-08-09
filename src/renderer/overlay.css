@@ -1,0 +1,44 @@
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "Noto Sans CJK SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: max-content;
+  height: max-content;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+}
+
+#card {
+  display: inline-flex;
+  align-items: center;
+  min-height: 43px;
+  padding: 10px 17px;
+  border: 1px solid rgba(88, 93, 106, 0.9);
+  border-radius: 14px;
+  background: rgba(33, 35, 42, 0.97);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.24);
+  color: #f5f6f8;
+  white-space: nowrap;
+}
+
+#dot {
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--accent, #70b2ff);
+  flex: 0 0 auto;
+}
+
+#text {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 21px;
+  letter-spacing: -0.08px;
+}

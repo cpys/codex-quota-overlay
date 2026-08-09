@@ -1,100 +1,115 @@
-# Codex 额度悬浮层（Windows）
+# Codex 额度悬浮层（Windows / macOS）
 
-[English](README.md) · [下载安装包](https://github.com/cpys/codex-quota-overlay/releases/latest) · [隐私说明](PRIVACY.zh-CN.md)
+[English](README.md) · [下载](https://github.com/cpys/codex-quota-overlay/releases) · [隐私说明](PRIVACY.zh-CN.md)
 
-Codex 额度悬浮层是一个轻量的 Windows Codex 桌面伴侣。它会在当前会话标题旁显示剩余额度、下次重置时间和可用重置卡；只要 Codex 不再位于前台，就会立即隐藏。
+Codex 额度悬浮层会在 Codex 当前会话标题旁，用一行显示剩余额度、下次重置时间和可用 Reset 卡；Codex 不在前台时，它会立即隐藏。
 
 ![Codex 额度悬浮层](docs/images/preview.png)
 
-截图保留了真实的 Codex 窗口和悬浮层位置；与演示无关的工作区、会话和账户内容已为保护隐私而模糊处理。
+截图保留了真实的 Codex 窗口和悬浮位置；与演示无关的工作区、会话和账户内容已经模糊处理。仓库不包含原始截图。
 
 > [!IMPORTANT]
 > 这是独立的社区开源项目，与 OpenAI 没有隶属、授权或支持关系。
 
 ## 功能
 
-- 在同一行显示 Codex 剩余额度百分比和下次重置时间。
-- 服务返回重置卡时，显示可用数量以及每张卡的到期时间。
-- 只有 Codex 桌面窗口位于前台时才显示。
-- 不抢焦点，鼠标可以直接穿透悬浮层操作 Codex。
-- 适配逐显示器 DPI、最小化、多显示器和单实例运行。
-- 托盘菜单支持立即刷新、开机启动、检查更新、隐私说明、版本信息和退出。
-- 通过 Codex 官方文档公开的本地 App Server JSON-RPC 接口读取；不截图、不读取浏览器 Cookie，也不会消耗重置卡。
-- 可选、先征得同意的每日一次匿名使用心跳，详见[隐私说明](PRIVACY.zh-CN.md)。
+- 在同一行显示剩余额度百分比和下次重置时间。
+- 服务返回 Reset 卡时，显示可用数量及每张卡的到期时间。
+- 只在 Codex Desktop 位于前台时显示；切换应用、最小化或退出后立即隐藏。
+- 不抢焦点，鼠标可穿透悬浮层继续操作 Codex。
+- 支持高 DPI、多显示器、单实例和登录时自动启动。
+- Windows 通知区域和 macOS 菜单栏提供刷新、位置微调、CLI 选择、短诊断码、隐私说明和退出。
+- 使用 Codex 官方公开的本地 App Server `account/rateLimits/read` 接口；不截图、不读取会话标题或浏览器 Cookie，也不会消耗 Reset 卡。
+- 可选的匿名每日心跳默认未配置，只有用户主动开启后才会发送，详见[隐私说明](PRIVACY.zh-CN.md)。
 
-## 系统要求
+## 支持范围
 
-- Windows 10 或 Windows 11。
-- 已安装 Codex 桌面应用，并使用 ChatGPT 托管账户登录。
-- .NET Framework 4.8（当前受支持的 Windows 通常已自带，也可从微软安装）。
+| 平台 | 支持状态 | 安装包 |
+| --- | --- | --- |
+| Windows 10/11 x64 | 已在 Windows 11 真机验证 | Setup EXE、便携 ZIP |
+| macOS 12+ Apple Silicon | 自动构建和双架构验证；等待 Mac 真机验收 | arm64 DMG、ZIP |
+| macOS 12+ Intel | 自动构建和双架构验证；等待 Mac 真机验收 | x64 DMG、ZIP |
 
-仅使用 API Key 或非 ChatGPT 账户的 Codex 配置，可能没有可读取的 ChatGPT 额度信息。
+Linux 没有当前官方 Codex Desktop 应用，因此本项目不发布 Linux 安装包。Linux 用户可直接使用官方 Codex CLI。
+
+使用 ChatGPT 托管账户登录的 Codex 才有对应的 ChatGPT 额度。仅 API Key 或其他账户配置可能没有可读取的额度信息。
 
 ## 安装
 
-1. 打开 [GitHub 最新版本](https://github.com/cpys/codex-quota-overlay/releases/latest)。
-2. 下载 `CodexQuotaOverlay-Setup-<版本号>.exe`。
-3. 运行安装器，可按需勾选开机启动或桌面快捷方式。
-4. 启动后，Windows 通知区域会保留一个 `%` 图标。
+### Windows
 
-目前安装包没有商业代码签名证书，Windows SmartScreen 可能首次提示。请始终将安装包的 SHA-256 与同一版本中的 `SHA256SUMS.txt` 对照。取得合适证书后会加入代码签名。
+1. 打开 [GitHub Releases](https://github.com/cpys/codex-quota-overlay/releases)。
+2. 下载 `CodexQuotaOverlay-Windows-Setup-<版本>-x64.exe`。
+3. 运行安装器；它可以直接升级旧的 0.1.x 版本。
+4. 启动后，通知区域会出现应用图标。
 
-每个版本也提供便携 ZIP。若要开启开机启动，请先把它解压到固定目录。
+也可以下载 `CodexQuotaOverlay-Windows-Portable-<版本>-x64.zip`，完整解压到固定目录后运行。
 
-## 使用
+### macOS
 
-让程序保留在通知区域即可。当 Codex 位于前台时，额度悬浮层会自动放到会话标题旁；切换到其他应用、最小化或退出 Codex 后，它会立即隐藏。
+1. Apple Silicon（M1/M2/M3/M4 等）下载 `arm64.dmg`；Intel Mac 下载 `x64.dmg`。
+2. 打开 DMG，把 **Codex Quota Overlay** 拖入 Applications。
+3. 当前测试包尚未使用 Apple Developer ID 公证。第一次运行请在 Finder 中右键应用并选择“打开”，再确认一次。
+4. 应用只显示在菜单栏，不显示 Dock 图标。
 
-右键托盘图标可以：
+如果状态显示 `E01`，从菜单栏选择 **Codex CLI → 手动选择…**，然后选择本机 `codex` 可执行文件。
 
-- 立即刷新额度；
-- 开启或关闭开机启动；
-- 在已配置统计服务的版本中管理匿名使用统计；
-- 打开隐私说明、版本下载页；
-- 查看当前版本或退出。
+> Windows 和 macOS 测试包当前都没有商业代码签名。请只从本仓库下载，并用同一版本的 `SHA256SUMS-*.txt` 校验文件完整性。
 
-只包含运行错误摘要的日志位于：
+## 使用与短诊断
+
+保持应用在通知区域或菜单栏运行即可。悬浮条的位置不合适时，用 **位置微调** 每次上下移动 2 px、左右移动 4 px，也可以恢复默认位置。
+
+遇到问题时选择 **复制简短诊断信息**。复制内容最多 200 个字符，例如：
 
 ```text
-%LOCALAPPDATA%\CodexQuotaOverlay\overlay.log
+E01 | 找不到 Codex CLI
 ```
 
-日志不会记录账户令牌或完整的 App Server 响应。
+诊断信息不会包含用户名、主机名、文件路径、账户、IP、安装 ID、会话标题、令牌或原始额度响应。0.2.0 起不写运行日志，也不提供长诊断文件导出。退出应用后，内存中的最后错误会随进程清除。
+
+常见代码：
+
+- `E01`：找不到 Codex CLI，可在菜单中手动选择。
+- `E02`–`E05`：本地 App Server 启动、初始化、读取或退出错误。
+- `W01` / `W02`：Codex 未打开、未位于前台或窗口身份未识别。
+- `M01`：macOS 没有返回可用的 Codex 应用身份或窗口边界。
+
+## 隐私
+
+额度响应只在本机内存中用于绘制。窗口探针只读取前台应用身份和窗口边界，并且主动把标题字段留空。应用不请求屏幕录制来截取内容，也不保存截图或会话信息。
+
+设置文件位置：
+
+- Windows：`%LOCALAPPDATA%\CodexQuotaOverlay\settings.json`
+- macOS：`~/Library/Application Support/CodexQuotaOverlay/settings.json`
+
+完整字段说明见[隐私说明](PRIVACY.zh-CN.md)。
 
 ## 从源码构建
 
-本地构建没有第三方依赖，直接使用 Windows 自带的 .NET Framework 编译器：
+需要 Node.js 24 和 npm。
 
 ```powershell
-.\build.ps1
-```
-
-可执行文件输出到 `artifacts\bin`。使用 Visual Studio 2022 时也可以打开 `CodexQuotaOverlay.sln` 构建 `net48` 项目。
-
-制作安装包需要先安装 [Inno Setup 6](https://jrsoftware.org/isinfo.php)，然后运行：
-
-```powershell
+npm ci
+.\test.ps1
 .\package.ps1
 ```
 
-运行源码与解析冒烟测试：
+Windows 安装包还需要 Inno Setup 6。macOS DMG/ZIP 必须在 macOS 上生成：
 
-```powershell
-.\test.ps1
+```bash
+npm ci
+npm test
+npm run dist:mac
 ```
 
-## 版本和发布
+推送标签后，GitHub Actions 会分别在 Windows 与 macOS runner 上测试、打包 x64/arm64 产物、生成 SHA-256，并在两端都成功后才创建 Release。
 
-项目遵循语义化版本。`VERSION`、程序集信息、安装器、Git 标签和 GitHub Release 必须保持一致。推送 `v0.1.0` 这样的标签后，发布工作流会生成安装包、便携 ZIP 和 SHA-256 校验文件。
+## 兼容性
 
-## 兼容性说明
+额度来自官方文档中的 [`account/rateLimits/read`](https://learn.chatgpt.com/docs/app-server#6-rate-limits-chatgpt)。Codex 更新较快，解析器会忽略缺失的可选字段。报告问题时只需提供悬浮层版本、Codex 版本和短诊断码，不要上传账户资料或长日志。
 
-额度来自官方文档中的 [`account/rateLimits/read`](https://learn.chatgpt.com/docs/app-server#6-rate-limits-chatgpt) 方法。Codex 更新较快，因此每个版本都会针对当时的桌面版本验证，并对缺失的可选字段做兼容处理。报告兼容问题时，请同时提供 Codex 和悬浮层的版本号。
+## 参与贡献与许可
 
-## 参与贡献
-
-欢迎提交问题和合并请求。请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)、[SECURITY.md](SECURITY.md) 和 [CHANGELOG.md](CHANGELOG.md)。
-
-## 开源许可
-
-[MIT](LICENSE)
+欢迎提交 Issue 和 Pull Request。请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)、[SECURITY.md](SECURITY.md) 和 [CHANGELOG.md](CHANGELOG.md)。项目使用 [MIT License](LICENSE)。
