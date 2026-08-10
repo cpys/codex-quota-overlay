@@ -51,6 +51,6 @@ jobs:
       - name: Build Swift helper for analysis
         if: matrix.language == 'swift'
         run: >-
-          xcrun swiftc -framework Cocoa -framework CoreGraphics
-          native/macos/ActiveWindowHelper.swift -o "$RUNNER_TEMP/active-window-helper"
+          xcrun swiftc -c native/macos/ActiveWindowHelper.swift
+          -o "$RUNNER_TEMP/active-window-helper.o"
       - uses: github/codeql-action/analyze@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3
