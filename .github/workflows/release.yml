@@ -37,7 +37,7 @@ jobs:
           ./test.ps1
           ./package.ps1 -SkipBuild
       - run: npm run sbom
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: windows-release
           path: |
@@ -85,7 +85,7 @@ jobs:
           node -e "const r=require(process.argv[1]); if(!r.ok||!r.packaged||r.platform!=='darwin'||r.version!==process.argv[2]) process.exit(1)" "$marker" "$version"
           cd artifacts/release-macos
           shasum -a 256 CodexQuotaOverlay-mac-* > "SHA256SUMS-macOS-${version}.txt"
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: macos-release
           path: artifacts/release-macos/*
