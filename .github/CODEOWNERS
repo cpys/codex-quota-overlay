@@ -1,0 +1,12 @@
+# Default ownership
+* @cpys
+
+# Security-sensitive and release surfaces
+/.github/workflows/ @cpys
+/installer/ @cpys
+/native/ @cpys
+/src/core/telemetry.js @cpys
+/src/platform/startup.js @cpys
+/SECURITY.md @cpys
+/PRIVACY.md @cpys
+/PRIVACY.zh-CN.md @cpys

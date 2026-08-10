@@ -3,7 +3,12 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 
-export function findCodexExecutable({platform = process.platform, env = process.env, home = os.homedir(), configuredPath = null} = {}) {
+export function findCodexExecutable({
+  platform = process.platform,
+  env = process.env,
+  home = os.homedir(),
+  configuredPath = null
+} = {}) {
   if (isExecutableFile(configuredPath)) return configuredPath;
   const explicit = env.CODEX_CLI_PATH;
   if (isExecutableFile(explicit)) return explicit;
@@ -14,9 +19,10 @@ export function findCodexExecutable({platform = process.platform, env = process.
     if (local) {
       const root = path.join(local, 'OpenAI', 'Codex', 'bin');
       try {
-        const versions = fs.readdirSync(root, {withFileTypes: true})
-          .filter(entry => entry.isDirectory())
-          .map(entry => path.join(root, entry.name, 'codex.exe'))
+        const versions = fs
+          .readdirSync(root, {withFileTypes: true})
+          .filter((entry) => entry.isDirectory())
+          .map((entry) => path.join(root, entry.name, 'codex.exe'))
           .filter(isExecutableFile)
           .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
         candidates.push(...versions);
@@ -36,8 +42,15 @@ export function findCodexExecutable({platform = process.platform, env = process.
         path.join(home, '.npm-global', 'bin', 'codex'),
         path.join(home, 'Library', 'pnpm', 'codex')
       );
-      candidates.push(...versionedCandidates(path.join(home, 'Library', 'Application Support', 'OpenAI', 'Codex', 'bin'), 'codex'));
-      candidates.push(...versionedCandidates(path.join(home, 'Library', 'Application Support', 'Codex', 'bin'), 'codex'));
+      candidates.push(
+        ...versionedCandidates(
+          path.join(home, 'Library', 'Application Support', 'OpenAI', 'Codex', 'bin'),
+          'codex'
+        )
+      );
+      candidates.push(
+        ...versionedCandidates(path.join(home, 'Library', 'Application Support', 'Codex', 'bin'), 'codex')
+      );
     }
     candidates.push(path.join(home, '.local', 'bin', 'codex'));
     candidates.push(...commandLookup('which', ['codex'], env));
@@ -47,9 +60,10 @@ export function findCodexExecutable({platform = process.platform, env = process.
 
 function versionedCandidates(root, executableName) {
   try {
-    return fs.readdirSync(root, {withFileTypes: true})
-      .filter(entry => entry.isDirectory())
-      .map(entry => path.join(root, entry.name, executableName))
+    return fs
+      .readdirSync(root, {withFileTypes: true})
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(root, entry.name, executableName))
       .filter(isExecutableFile)
       .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
   } catch {
@@ -61,7 +75,10 @@ function commandLookup(command, args, env = process.env) {
   try {
     const result = spawnSync(command, args, {encoding: 'utf8', windowsHide: true, env});
     if (result.status !== 0) return [];
-    return result.stdout.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
+    return result.stdout
+      .split(/\r?\n/)
+      .map((value) => value.trim())
+      .filter(Boolean);
   } catch {
     return [];
   }

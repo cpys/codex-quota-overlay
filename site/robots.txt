@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cpys.github.io/codex-quota-overlay/sitemap.xml

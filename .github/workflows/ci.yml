@@ -9,38 +9,38 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Test (${{ matrix.os }})
+  quality:
+    name: Quality (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-14]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm test
-      - run: npm run test:host
+      - run: npm audit --audit-level=high
+      - run: npm run verify
       - run: npm run native
       - name: Verify universal macOS helper
         if: runner.os == 'macOS'
         run: |
           test "$(lipo -archs build/native/macos/active-window-helper)" = "x86_64 arm64"
           codesign --verify --verbose build/native/macos/active-window-helper
-      - run: npm run smoke
 
   package-windows:
-    name: Package Windows
+    name: Package and install Windows
+    needs: quality
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
@@ -51,10 +51,26 @@ jobs:
           if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
             choco install innosetup --no-progress -y
           }
-      - name: Build installers
+      - name: Build and self-test packages
         shell: pwsh
         run: ./package.ps1 -SkipBuild
-      - uses: actions/upload-artifact@v4
+      - name: Install, execute, and uninstall setup package
+        shell: pwsh
+        run: |
+          $setup = Get-Item artifacts/release/CodexQuotaOverlay-Windows-Setup-*-x64.exe
+          $installer = Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -PassThru -Wait -WindowStyle Hidden
+          if ($installer.ExitCode -ne 0) { throw "Installer failed: $($installer.ExitCode)" }
+          $installed = Join-Path $env:LOCALAPPDATA 'Programs\CodexQuotaOverlay\CodexQuotaOverlay.exe'
+          if (-not (Test-Path -LiteralPath $installed)) { throw 'Installed executable is missing.' }
+          $marker = Join-Path $env:RUNNER_TEMP 'cqo-installed-self-test.json'
+          $appProcess = Start-Process -FilePath $installed -ArgumentList "--self-test=$marker" -PassThru -Wait -WindowStyle Hidden
+          if ($appProcess.ExitCode -ne 0) { throw "Installed application self-test failed: $($appProcess.ExitCode)" }
+          if (-not (Test-Path -LiteralPath $marker)) { throw 'Installed application self-test result is missing.' }
+          $result = Get-Content -Raw -LiteralPath $marker | ConvertFrom-Json
+          if (-not $result.ok -or -not $result.packaged) { throw 'Installed application self-test failed.' }
+          $uninstaller = Start-Process -FilePath (Join-Path (Split-Path $installed) 'unins000.exe') -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -PassThru -Wait -WindowStyle Hidden
+          if ($uninstaller.ExitCode -ne 0) { throw "Uninstaller failed: $($uninstaller.ExitCode)" }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: codex-quota-overlay-windows
           path: |
@@ -64,30 +80,42 @@ jobs:
           if-no-files-found: error
 
   package-macos:
-    name: Package macOS
+    name: Package and execute macOS
+    needs: quality
     runs-on: macos-14
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
-      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run dist:mac
-      - name: Verify packages and checksums
+      - name: Verify packages, execute host architecture, and create checksums
         run: |
           version="$(tr -d '\r\n' < VERSION)"
-          mkdir -p artifacts/release-macos
+          mkdir -p artifacts/release-macos "$RUNNER_TEMP/cqo-app"
           cp artifacts/electron/CodexQuotaOverlay-mac-*.dmg artifacts/release-macos/
           cp artifacts/electron/CodexQuotaOverlay-mac-*.zip artifacts/release-macos/
+          test "$(find artifacts/release-macos -name '*.dmg' | wc -l | tr -d ' ')" = "2"
+          test "$(find artifacts/release-macos -name '*.zip' | wc -l | tr -d ' ')" = "2"
+          for dmg in artifacts/release-macos/*.dmg; do hdiutil verify "$dmg"; done
+          host_arch="$(uname -m)"
+          package_arch="x64"
+          test "$host_arch" != "arm64" || package_arch="arm64"
+          unzip -q "artifacts/release-macos/CodexQuotaOverlay-mac-${version}-${package_arch}.zip" -d "$RUNNER_TEMP/cqo-app"
+          app_path="$RUNNER_TEMP/cqo-app/CodexQuotaOverlay.app"
+          codesign --force --deep --sign - "$app_path"
+          codesign --verify --deep --strict --verbose=2 "$app_path"
+          marker="$RUNNER_TEMP/cqo-macos-self-test.json"
+          "$app_path/Contents/MacOS/CodexQuotaOverlay" "--self-test=$marker"
+          node -e "const r=require(process.argv[1]); if(!r.ok||!r.packaged||r.platform!=='darwin'||r.version!==process.argv[2]) process.exit(1)" "$marker" "$version"
           cd artifacts/release-macos
           shasum -a 256 CodexQuotaOverlay-mac-* > "SHA256SUMS-macOS-${version}.txt"
-          test "$(find . -name '*.dmg' | wc -l | tr -d ' ')" = "2"
-          test "$(find . -name '*.zip' | wc -l | tr -d ' ')" = "2"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: codex-quota-overlay-macos
           path: artifacts/release-macos/*

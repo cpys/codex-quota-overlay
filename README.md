@@ -1,6 +1,11 @@
 # Codex Quota Overlay (Windows / macOS)
 
-[简体中文](README.zh-CN.md) · [Download](https://github.com/cpys/codex-quota-overlay/releases) · [Privacy](PRIVACY.md)
+[![CI](https://github.com/cpys/codex-quota-overlay/actions/workflows/ci.yml/badge.svg)](https://github.com/cpys/codex-quota-overlay/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/cpys/codex-quota-overlay/actions/workflows/codeql.yml/badge.svg)](https://github.com/cpys/codex-quota-overlay/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/github/v/release/cpys/codex-quota-overlay?include_prereleases)](https://github.com/cpys/codex-quota-overlay/releases)
+[![License](https://img.shields.io/github/license/cpys/codex-quota-overlay)](LICENSE)
+
+[Website](https://cpys.github.io/codex-quota-overlay/) · [简体中文](README.zh-CN.md) · [Download](https://github.com/cpys/codex-quota-overlay/releases/tag/v0.3.0) · [Privacy](PRIVACY.md) · [Support](SUPPORT.md)
 
 Codex Quota Overlay shows the remaining quota, next reset time, and available reset credits on one line beside the current Codex conversation title. It disappears immediately when Codex is no longer active.
 
@@ -24,11 +29,11 @@ The screenshot preserves the real Codex window and overlay placement. Unrelated 
 
 ## Support matrix
 
-| Platform | Status | Assets |
-| --- | --- | --- |
-| Windows 10/11 x64 | Verified on a physical Windows 11 host | Setup EXE, portable ZIP |
-| macOS 12+ Apple Silicon | Automated build and dual-architecture checks; physical-Mac acceptance pending | arm64 DMG, ZIP |
-| macOS 12+ Intel | Automated build and dual-architecture checks; physical-Mac acceptance pending | x64 DMG, ZIP |
+| Platform                | Status                                                                        | Assets                  |
+| ----------------------- | ----------------------------------------------------------------------------- | ----------------------- |
+| Windows 10/11 x64       | Verified on a physical Windows 11 host                                        | Setup EXE, portable ZIP |
+| macOS 12+ Apple Silicon | Automated build and dual-architecture checks; physical-Mac acceptance pending | arm64 DMG, ZIP          |
+| macOS 12+ Intel         | Automated build and dual-architecture checks; physical-Mac acceptance pending | x64 DMG, ZIP            |
 
 There is currently no official Codex Desktop app for Linux, so this project does not publish Linux packages. Linux users can use the official Codex CLI.
 
@@ -106,10 +111,12 @@ npm run dist:mac
 
 Tag pushes run Windows and macOS GitHub Actions jobs, package x64/arm64 assets, generate SHA-256 checksums, and create a Release only after both platforms succeed.
 
+The project website, CI, source hosting, and release downloads use GitHub Pages, Actions, and Releases. No custom domain or third-party cloud account is required. Optional telemetry remains unconfigured in public builds.
+
 ## Compatibility
 
 Quota data comes from the documented [`account/rateLimits/read`](https://learn.chatgpt.com/docs/app-server#6-rate-limits-chatgpt) method. Codex changes quickly, and the parser treats optional fields defensively. Reports need only the overlay version, Codex version, and short diagnostic code—never account information or long logs.
 
 ## Contributing and license
 
-Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [CHANGELOG.md](CHANGELOG.md) first. Licensed under the [MIT License](LICENSE).
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [SECURITY.md](SECURITY.md), and [GOVERNANCE.md](GOVERNANCE.md) first. Project direction is published in [ROADMAP.md](ROADMAP.md), and release architecture is documented under [docs](docs/ARCHITECTURE.md). Licensed under the [MIT License](LICENSE).

@@ -1,12 +1,32 @@
 {
   "name": "codex-quota-overlay",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A privacy-friendly Codex quota overlay for Windows and macOS.",
+  "keywords": [
+    "codex",
+    "codex-desktop",
+    "electron",
+    "macos",
+    "quota",
+    "windows"
+  ],
   "type": "module",
   "main": "src/main.js",
   "author": "cpys",
   "license": "MIT",
-  "homepage": "https://github.com/cpys/codex-quota-overlay",
+  "homepage": "https://cpys.github.io/codex-quota-overlay/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cpys/codex-quota-overlay.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cpys/codex-quota-overlay/issues"
+  },
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11 <12"
+  },
+  "packageManager": "npm@11.12.1",
   "cqo": {
     "telemetryEndpoint": ""
   },
@@ -17,14 +37,27 @@
     "test": "npm run test:unit && npm run test:telemetry",
     "test:unit": "node --test tests-js/*.test.js",
     "test:telemetry": "node --test telemetry/worker/test/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/core/*.js --test-coverage-lines=90 --test-coverage-branches=60 --test-coverage-functions=80 tests-js/*.test.js",
     "test:host": "node scripts/host-simulation.mjs",
     "smoke": "electron scripts/electron-smoke.cjs",
-    "dist:win": "npm run icon && npm run native && electron-builder --win dir --x64 --publish never",
+    "lint": "eslint src scripts site tests-js telemetry/worker/src telemetry/worker/test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --project tsconfig.json",
+    "verify": "npm run lint && npm run format:check && npm run typecheck && npm run test:coverage && npm run test:telemetry && npm run test:host && npm run smoke",
+    "sbom": "node scripts/generate-sbom.mjs",
+    "dist:win": "npm run icon && npm run native && node scripts/build-windows.mjs",
     "dist:mac": "npm run icon && npm run native && electron-builder --mac dmg zip --x64 --arm64 --publish never"
   },
   "devDependencies": {
+    "@cyclonedx/cyclonedx-npm": "6.0.0",
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.13.3",
     "electron": "43.3.0",
-    "electron-builder": "26.15.3"
+    "electron-builder": "26.15.3",
+    "eslint": "10.8.1",
+    "prettier": "3.9.6",
+    "typescript": "7.0.2"
   },
   "build": {
     "appId": "com.cpys.codexquotaoverlay",
@@ -32,6 +65,16 @@
     "executableName": "CodexQuotaOverlay",
     "asar": true,
     "asarUnpack": [],
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true,
+      "loadBrowserProcessSpecificV8Snapshot": false,
+      "grantFileProtocolExtraPrivileges": true
+    },
     "directories": {
       "output": "artifacts/electron",
       "buildResources": "build/resources"

@@ -14,8 +14,10 @@ test('keeps a wide overlay within the right edge', () => {
 });
 
 test('normalizes physical pixels for scaled Windows displays', () => {
-  assert.deepEqual(
-    physicalToDipBounds({x: 300, y: 150, width: 1800, height: 1200}, 'win32', 1.5),
-    {x: 200, y: 100, width: 1200, height: 800}
-  );
+  assert.deepEqual(physicalToDipBounds({x: 300, y: 150, width: 1800, height: 1200}, 'win32', 1.5), {
+    x: 200,
+    y: 100,
+    width: 1200,
+    height: 800
+  });
 });

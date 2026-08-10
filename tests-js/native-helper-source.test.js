@@ -11,7 +11,10 @@ test('Windows helper exposes bounds without reading window titles', () => {
 });
 
 test('macOS helper is title-free and built as a universal executable', () => {
-  const helper = fs.readFileSync(new URL('../native/macos/ActiveWindowHelper.swift', import.meta.url), 'utf8');
+  const helper = fs.readFileSync(
+    new URL('../native/macos/ActiveWindowHelper.swift', import.meta.url),
+    'utf8'
+  );
   const build = fs.readFileSync(new URL('../scripts/build-native.mjs', import.meta.url), 'utf8');
   assert.match(helper, /frontmostApplication/);
   assert.match(helper, /bundleIdentifier/);

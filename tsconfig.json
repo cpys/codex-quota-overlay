@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "target": "ES2022",
+    "types": ["node"]
+  },
+  "include": [
+    "eslint.config.js",
+    "scripts/**/*.cjs",
+    "scripts/**/*.mjs",
+    "site/**/*.js",
+    "src/**/*.d.ts",
+    "src/**/*.js",
+    "src/**/*.cjs",
+    "telemetry/worker/src/**/*.js"
+  ]
+}

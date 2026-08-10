@@ -4,6 +4,11 @@ import readline from 'node:readline';
 import os from 'node:os';
 import {parseQuotaResult} from './quota.js';
 
+function errorDetail(error) {
+  if (error && typeof error === 'object' && 'code' in error) return String(error.code);
+  return error instanceof Error ? error.name : undefined;
+}
+
 export class CodexRpcClient extends EventEmitter {
   constructor({executable, version, spawnProcess = spawn}) {
     super();
@@ -31,16 +36,16 @@ export class CodexRpcClient extends EventEmitter {
         stdio: ['pipe', 'pipe', 'pipe']
       });
     } catch (error) {
-      this.emit('failure', {code: 'E02', detail: error?.code ?? error?.name});
+      this.emit('failure', {code: 'E02', detail: errorDetail(error)});
       return;
     }
-    this.process.once('error', error => this.emit('failure', {code: 'E02', detail: error?.code ?? error?.name}));
+    this.process.once('error', (error) => this.emit('failure', {code: 'E02', detail: errorDetail(error)}));
     this.process.once('exit', () => {
       if (!this.disposed) this.emit('failure', {code: 'E05'});
     });
     this.process.stderr.resume();
     const lines = readline.createInterface({input: this.process.stdout, crlfDelay: Infinity});
-    lines.on('line', line => this.#handleLine(line));
+    lines.on('line', (line) => this.#handleLine(line));
     this.#send({
       method: 'initialize',
       id: 0,
