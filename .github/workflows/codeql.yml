@@ -23,9 +23,6 @@ jobs:
           - language: csharp
             os: windows-latest
             build-mode: manual
-          - language: swift
-            os: macos-15-intel
-            build-mode: manual
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     permissions:
@@ -48,9 +45,4 @@ jobs:
       - name: Build C# helper for analysis
         if: matrix.language == 'csharp'
         run: npm run native
-      - name: Build Swift helper for analysis
-        if: matrix.language == 'swift'
-        run: >-
-          xcrun swiftc -c native/macos/ActiveWindowHelper.swift
-          -o "$RUNNER_TEMP/active-window-helper.o"
       - uses: github/codeql-action/analyze@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3
