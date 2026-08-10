@@ -9,11 +9,11 @@ export function parseQuotaResult(result) {
   const resetCredits = result?.rateLimitResetCredits;
   const credits = Array.isArray(resetCredits?.credits)
     ? resetCredits.credits
-      .filter(card => card?.status === 'available')
-      .map(card => ({
-        expiresAt: numberOrZero(card.expiresAt),
-        title: typeof card.title === 'string' ? card.title : ''
-      }))
+        .filter((card) => card?.status === 'available')
+        .map((card) => ({
+          expiresAt: numberOrZero(card.expiresAt),
+          title: typeof card.title === 'string' ? card.title : ''
+        }))
     : [];
 
   return {
@@ -59,14 +59,26 @@ export function formatMoment(unixSeconds, suffix, locale = 'zh-CN', now = new Da
   const value = new Date(unixSeconds * 1000);
   const today = startOfDay(now);
   const target = startOfDay(value);
-  const dayDifference = Math.round((target - today) / 86400000);
-  const time = new Intl.DateTimeFormat(locale, {hour: '2-digit', minute: '2-digit', hour12: false}).format(value);
+  const dayDifference = Math.round((target.getTime() - today.getTime()) / 86400000);
+  const time = new Intl.DateTimeFormat(locale, {hour: '2-digit', minute: '2-digit', hour12: false}).format(
+    value
+  );
   let day;
   if (locale.toLowerCase().startsWith('zh')) {
-    day = dayDifference === 0 ? '今天' : dayDifference === 1 ? '明天' : `${value.getMonth() + 1}月${value.getDate()}日`;
+    day =
+      dayDifference === 0
+        ? '今天'
+        : dayDifference === 1
+          ? '明天'
+          : `${value.getMonth() + 1}月${value.getDate()}日`;
     return `${day} ${time} ${suffix}`;
   }
-  day = dayDifference === 0 ? 'Today' : dayDifference === 1 ? 'Tomorrow' : new Intl.DateTimeFormat(locale, {month: 'short', day: 'numeric'}).format(value);
+  day =
+    dayDifference === 0
+      ? 'Today'
+      : dayDifference === 1
+        ? 'Tomorrow'
+        : new Intl.DateTimeFormat(locale, {month: 'short', day: 'numeric'}).format(value);
   return `${day} ${time} ${suffix}`;
 }
 

@@ -1,4 +1,6 @@
+/** @type {HTMLElement} */
 const card = document.querySelector('#card');
+/** @type {HTMLElement} */
 const text = document.querySelector('#text');
 
 function reportSize() {
@@ -6,7 +8,7 @@ function reportSize() {
   window.quotaOverlay.measured({width: Math.ceil(bounds.width), height: Math.ceil(bounds.height)});
 }
 
-window.quotaOverlay.onState(state => {
+window.quotaOverlay.onState((state) => {
   text.textContent = state.text;
   card.style.setProperty('--accent', state.accent);
   document.documentElement.lang = state.locale || 'zh-CN';

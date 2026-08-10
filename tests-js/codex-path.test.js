@@ -10,7 +10,10 @@ test('a manually configured CLI path wins on supported platforms', () => {
   try {
     const executable = path.join(root, 'codex');
     fs.writeFileSync(executable, 'test');
-    assert.equal(findCodexExecutable({platform: 'darwin', configuredPath: executable, home: root, env: {}}), executable);
+    assert.equal(
+      findCodexExecutable({platform: 'darwin', configuredPath: executable, home: root, env: {}}),
+      executable
+    );
   } finally {
     fs.rmSync(root, {recursive: true, force: true});
   }

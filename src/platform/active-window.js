@@ -15,13 +15,14 @@ export class ActiveWindowProvider {
     if (this.helper || !['win32', 'darwin'].includes(this.platform)) return;
     if (Date.now() - this.lastStartAttempt < 5000) return;
     this.lastStartAttempt = Date.now();
-    const executable = this.platform === 'win32'
-      ? path.join(this.helperRoot, 'windows', 'active-window-helper.exe')
-      : path.join(this.helperRoot, 'macos', 'active-window-helper');
+    const executable =
+      this.platform === 'win32'
+        ? path.join(this.helperRoot, 'windows', 'active-window-helper.exe')
+        : path.join(this.helperRoot, 'macos', 'active-window-helper');
     try {
       this.helper = spawn(executable, [], {stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true});
       const lines = readline.createInterface({input: this.helper.stdout, crlfDelay: Infinity});
-      lines.on('line', line => {
+      lines.on('line', (line) => {
         try {
           this.current = JSON.parse(line);
         } catch {

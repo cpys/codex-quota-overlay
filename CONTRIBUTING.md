@@ -13,7 +13,7 @@ Thank you for helping improve Codex Quota Overlay.
 
 1. Fork and clone the repository on Windows or macOS.
 2. Create a focused branch.
-3. Run `npm ci`, `npm test`, `npm run test:host`, and `npm run smoke`.
+3. Use Node.js 24 and npm 11, then run `npm ci` and `npm run verify`.
 4. On Windows, run `./test.ps1`; installer changes also require Inno Setup 6 and `./package.ps1`.
 5. On macOS, run `npm run native` and `npm run dist:mac` for packaging changes.
 6. Keep English and Chinese user documentation aligned when behavior changes.
@@ -27,3 +27,4 @@ Prefer small, reviewable changes. New network access, persistence, startup behav
 - Add or update tests for parsing and compatibility changes.
 - Update `CHANGELOG.md` under `Unreleased`.
 - Do not commit build artifacts, credentials, production telemetry secrets, or private screenshots.
+- Follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and the decisions in [GOVERNANCE.md](GOVERNANCE.md).

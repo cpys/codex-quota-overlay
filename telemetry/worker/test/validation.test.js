@@ -20,5 +20,8 @@ test('accepts only supported desktop platforms', () => {
 });
 
 test('rejects extra-sensitive values that do not fit the schema', () => {
-  assert.equal(validateHeartbeat({...valid, installationId: 'account@example.com'}), 'invalid installationId');
+  assert.equal(
+    validateHeartbeat({...valid, installationId: 'account@example.com'}),
+    'invalid installationId'
+  );
 });

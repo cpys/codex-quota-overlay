@@ -17,7 +17,9 @@ if (process.platform === 'win32') {
   const outputDirectory = path.join(outputRoot, 'windows');
   fs.mkdirSync(outputDirectory, {recursive: true});
   run(compiler, [
-    '/nologo', '/optimize+', '/target:exe',
+    '/nologo',
+    '/optimize+',
+    '/target:exe',
     `/out:${path.join(outputDirectory, 'active-window-helper.exe')}`,
     path.join(root, 'native', 'windows', 'ActiveWindowHelper.cs')
   ]);

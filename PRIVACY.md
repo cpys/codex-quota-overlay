@@ -1,6 +1,6 @@
 # Privacy
 
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
 Codex Quota Overlay is local-first. Quota reads, foreground-Codex detection, and overlay placement happen on the user's Windows or macOS computer.
 
@@ -37,6 +37,8 @@ Public source builds and current release builds have no telemetry endpoint confi
 The payload excludes quota, reset credits, Codex accounts, and CLI paths, and does not explicitly include an IP address. As with any HTTPS request, network and hosting providers process the source IP for delivery and may temporarily retain it in security logs. The analytics store must not use it as an identifier or copy it into analytics records. Reference-backend heartbeat retention is at most 90 days.
 
 Deleting settings creates a new random UUID the next time a heartbeat needs one. Disabling telemetry stops further heartbeats.
+
+The GitHub Pages product site contains no analytics script, cookies, forms, or third-party tracking pixels. GitHub may process standard web request metadata as the hosting provider under its own terms.
 
 ## Changes and questions
 

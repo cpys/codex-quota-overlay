@@ -15,8 +15,10 @@ export function placeOverlay(owner, overlay, adjustment = {}, tuning = DEFAULT_P
   const yAdjustment = finite(adjustment.y, 0);
   let x = owner.x + Math.round(owner.width * tuning.xRatio);
   const heightAdjustment = Math.max(0, overlay.height - tuning.referenceHeight) / 2;
-  const yOffset = clamp(Math.round(owner.height * tuning.yRatio), tuning.yMinimum, tuning.yMaximum)
-    - tuning.yTitleAdjustment - heightAdjustment;
+  const yOffset =
+    clamp(Math.round(owner.height * tuning.yRatio), tuning.yMinimum, tuning.yMaximum) -
+    tuning.yTitleAdjustment -
+    heightAdjustment;
   let y = owner.y + Math.round(yOffset);
 
   const contentLeft = owner.x + Math.round(owner.width * tuning.contentLeftRatio);
@@ -41,4 +43,4 @@ export function physicalToDipBounds(bounds, platform, scaleFactor = 1) {
 }
 
 const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));
-const finite = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+const finite = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);

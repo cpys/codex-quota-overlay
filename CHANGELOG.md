@@ -9,6 +9,25 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - Code-signed Windows installer.
 - Configured privacy-preserving telemetry endpoint after infrastructure review.
 
+## [0.3.0] - 2026-08-10
+
+### Added
+
+- GitHub Pages product site with English/Chinese copy, responsive platform downloads, and a privacy-redacted real product preview.
+- Community governance, support, conduct, maintainers, roadmap, release, signing, troubleshooting, and third-party notice documentation.
+- ESLint, Prettier, JavaScript type checking, enforced core coverage thresholds, and packaged-application self-tests.
+- CodeQL, dependency review, OpenSSF Scorecard, CycloneDX SBOM, and release artifact attestations.
+
+### Changed
+
+- Standardized package/repository metadata, issue routing, ownership, CI permissions, and platform-specific release presentation.
+- Upgraded the release process so published binaries originate only from tested tag workflows.
+
+### Security
+
+- Enabled Chromium renderer sandboxing, a restrictive Content Security Policy, navigation/new-window denial, and IPC sender validation.
+- Enabled Electron ASAR integrity validation and restrictive production fuses.
+
 ## [0.2.0] - 2026-08-09
 
 ### Added
@@ -40,6 +59,7 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - Inno Setup installer, portable archive, SHA-256 checksums, CI, and tag-based GitHub Releases.
 - English and Simplified Chinese documentation.
 
-[Unreleased]: https://github.com/cpys/codex-quota-overlay/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/cpys/codex-quota-overlay/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/cpys/codex-quota-overlay/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/cpys/codex-quota-overlay/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/cpys/codex-quota-overlay/releases/tag/v0.1.0

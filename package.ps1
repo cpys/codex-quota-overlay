@@ -21,8 +21,23 @@ finally {
 }
 
 $unpacked = Join-Path $project 'artifacts\electron\win-unpacked'
-if (-not (Test-Path -LiteralPath (Join-Path $unpacked 'CodexQuotaOverlay.exe'))) {
+$packagedExe = Join-Path $unpacked 'CodexQuotaOverlay.exe'
+if (-not (Test-Path -LiteralPath $packagedExe)) {
     throw 'Packaged Windows executable was not produced.'
+}
+
+$selfTestPath = Join-Path ([System.IO.Path]::GetTempPath()) "cqo-self-test-$PID.json"
+try {
+    $selfTestProcess = Start-Process -FilePath $packagedExe -ArgumentList "--self-test=$selfTestPath" -PassThru -Wait -WindowStyle Hidden
+    if ($selfTestProcess.ExitCode -ne 0) { throw "Packaged Windows self-test failed with exit code $($selfTestProcess.ExitCode)." }
+    if (-not (Test-Path -LiteralPath $selfTestPath)) { throw 'Packaged Windows self-test did not create a result.' }
+    $selfTest = Get-Content -Raw -Encoding UTF8 -LiteralPath $selfTestPath | ConvertFrom-Json
+    if (-not $selfTest.ok -or -not $selfTest.packaged -or $selfTest.platform -ne 'win32' -or $selfTest.version -ne $version) {
+        throw "Packaged Windows self-test returned unexpected data: $($selfTest | ConvertTo-Json -Compress)"
+    }
+}
+finally {
+    Remove-Item -LiteralPath $selfTestPath -Force -ErrorAction SilentlyContinue
 }
 
 $release = Join-Path $project 'artifacts\release'

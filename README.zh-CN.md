@@ -1,6 +1,11 @@
 # Codex 额度悬浮层（Windows / macOS）
 
-[English](README.md) · [下载](https://github.com/cpys/codex-quota-overlay/releases) · [隐私说明](PRIVACY.zh-CN.md)
+[![CI](https://github.com/cpys/codex-quota-overlay/actions/workflows/ci.yml/badge.svg)](https://github.com/cpys/codex-quota-overlay/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/cpys/codex-quota-overlay/actions/workflows/codeql.yml/badge.svg)](https://github.com/cpys/codex-quota-overlay/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/github/v/release/cpys/codex-quota-overlay?include_prereleases)](https://github.com/cpys/codex-quota-overlay/releases)
+[![License](https://img.shields.io/github/license/cpys/codex-quota-overlay)](LICENSE)
+
+[项目主页](https://cpys.github.io/codex-quota-overlay/) · [English](README.md) · [下载](https://github.com/cpys/codex-quota-overlay/releases/tag/v0.3.0) · [隐私说明](PRIVACY.zh-CN.md) · [支持](SUPPORT.md)
 
 Codex 额度悬浮层会在 Codex 当前会话标题旁，用一行显示剩余额度、下次重置时间和可用 Reset 卡；Codex 不在前台时，它会立即隐藏。
 
@@ -24,11 +29,11 @@ Codex 额度悬浮层会在 Codex 当前会话标题旁，用一行显示剩余�
 
 ## 支持范围
 
-| 平台 | 支持状态 | 安装包 |
-| --- | --- | --- |
-| Windows 10/11 x64 | 已在 Windows 11 真机验证 | Setup EXE、便携 ZIP |
-| macOS 12+ Apple Silicon | 自动构建和双架构验证；等待 Mac 真机验收 | arm64 DMG、ZIP |
-| macOS 12+ Intel | 自动构建和双架构验证；等待 Mac 真机验收 | x64 DMG、ZIP |
+| 平台                    | 支持状态                                | 安装包              |
+| ----------------------- | --------------------------------------- | ------------------- |
+| Windows 10/11 x64       | 已在 Windows 11 真机验证                | Setup EXE、便携 ZIP |
+| macOS 12+ Apple Silicon | 自动构建和双架构验证；等待 Mac 真机验收 | arm64 DMG、ZIP      |
+| macOS 12+ Intel         | 自动构建和双架构验证；等待 Mac 真机验收 | x64 DMG、ZIP        |
 
 Linux 没有当前官方 Codex Desktop 应用，因此本项目不发布 Linux 安装包。Linux 用户可直接使用官方 Codex CLI。
 
@@ -106,10 +111,12 @@ npm run dist:mac
 
 推送标签后，GitHub Actions 会分别在 Windows 与 macOS runner 上测试、打包 x64/arm64 产物、生成 SHA-256，并在两端都成功后才创建 Release。
 
+项目主页、CI、源码托管和安装包下载全部使用 GitHub Pages、Actions 与 Releases，不要求自定义域名或第三方云账户。公开构建中的可选统计服务仍保持未配置状态。
+
 ## 兼容性
 
 额度来自官方文档中的 [`account/rateLimits/read`](https://learn.chatgpt.com/docs/app-server#6-rate-limits-chatgpt)。Codex 更新较快，解析器会忽略缺失的可选字段。报告问题时只需提供悬浮层版本、Codex 版本和短诊断码，不要上传账户资料或长日志。
 
 ## 参与贡献与许可
 
-欢迎提交 Issue 和 Pull Request。请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)、[SECURITY.md](SECURITY.md) 和 [CHANGELOG.md](CHANGELOG.md)。项目使用 [MIT License](LICENSE)。
+欢迎提交 Issue 和 Pull Request。请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)、[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)、[SECURITY.md](SECURITY.md) 和 [GOVERNANCE.md](GOVERNANCE.md)。项目方向见 [ROADMAP.md](ROADMAP.md)，架构与发布资料位于 [docs](docs/ARCHITECTURE.md)。项目使用 [MIT License](LICENSE)。

@@ -16,7 +16,7 @@ test('parses quota and available reset cards into one line', () => {
   assert.equal(snapshot.usedPercent, 38.4);
   assert.equal(snapshot.resetCards.length, 1);
   const view = quotaView(snapshot, 'zh-CN', new Date('2025-10-09T00:00:00+08:00'));
-  assert.match(view.text, /^剩余 62%  ·  /);
+  assert.match(view.text, /^剩余 62% {2}· {2}/);
   assert.match(view.text, /Reset ×2/);
   assert.match(view.text, /另 1 张到期时间未知/);
   assert.equal(view.accent, '#4dd18d');

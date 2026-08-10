@@ -1,0 +1,10 @@
+artifacts/
+build/native/
+node_modules/
+package-lock.json
+*.png
+*.ico
+*.icns
+*.dmg
+*.zip
+*.exe

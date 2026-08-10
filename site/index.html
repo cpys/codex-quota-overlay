@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080d11" />
+    <meta
+      name="description"
+      content="A tiny, privacy-friendly quota overlay for Codex Desktop on Windows and macOS."
+    />
+    <meta property="og:title" content="Codex Quota Overlay" />
+    <meta property="og:description" content="Your Codex quota, always in sight." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cpys.github.io/codex-quota-overlay/" />
+    <meta
+      property="og:image"
+      content="https://cpys.github.io/codex-quota-overlay/assets/product-preview.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="assets/app-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Codex Quota Overlay</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Codex Quota Overlay home">
+        <img src="assets/app-icon.png" alt="" width="32" height="32" />
+        <span>Codex Quota Overlay</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#preview" data-i18n="navPreview">Preview</a>
+        <a href="#how" data-i18n="navHow">How it works</a>
+        <a href="#privacy" data-i18n="navPrivacy">Privacy</a>
+        <a href="#download" data-i18n="navDownload">Download</a>
+      </nav>
+      <div class="language" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="zh-CN" aria-pressed="false">中文</button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <h1 data-i18n="heroTitle">Your Codex quota,<br />always in sight.</h1>
+          <p class="hero-lede" data-i18n="heroLede">
+            A tiny, privacy-friendly overlay for Codex Desktop on Windows and macOS.
+          </p>
+          <div class="hero-actions">
+            <a
+              class="button button-primary"
+              href="https://github.com/cpys/codex-quota-overlay/releases/tag/v0.3.0"
+              data-i18n="downloadLatest"
+              >Download latest</a
+            >
+            <a
+              class="button button-secondary"
+              href="https://github.com/cpys/codex-quota-overlay"
+              data-i18n="viewGitHub"
+              >View on GitHub</a
+            >
+          </div>
+          <dl class="feature-strip">
+            <div>
+              <dt data-i18n="featurePlacement">Native placement</dt>
+              <dd data-i18n="featurePlacementBody">Sits beside the conversation title.</dd>
+            </div>
+            <div>
+              <dt data-i18n="featureLocal">Local by default</dt>
+              <dd data-i18n="featureLocalBody">Quota data stays on your device.</dd>
+            </div>
+            <div>
+              <dt data-i18n="featurePlatforms">Windows + macOS</dt>
+              <dd data-i18n="featurePlatformsBody">One tiny tool. Two platforms.</dd>
+            </div>
+          </dl>
+        </div>
+        <figure class="product-frame" id="preview">
+          <img
+            src="assets/product-preview.png"
+            alt="Privacy-redacted Codex Desktop window with a sharp, single-line quota overlay beside the conversation title"
+            data-i18n-alt="previewAlt"
+          />
+          <figcaption data-i18n="previewCaption">Real placement. Private content redacted.</figcaption>
+        </figure>
+        <span class="alignment-guide" aria-hidden="true"></span>
+      </section>
+
+      <section class="workflow section" id="how">
+        <h2 data-i18n="workflowTitle">One line. Right where you need it.</h2>
+        <ol>
+          <li>
+            <span class="step-number">1</span>
+            <h3 data-i18n="step1">Find Codex</h3>
+            <p data-i18n="step1Body">Detect the official Codex Desktop window without reading its title.</p>
+          </li>
+          <li>
+            <span class="step-number">2</span>
+            <h3 data-i18n="step2">Read local quota</h3>
+            <p data-i18n="step2Body">Ask the documented local App Server for rate-limit data.</p>
+          </li>
+          <li>
+            <span class="step-number">3</span>
+            <h3 data-i18n="step3">Stay out of the way</h3>
+            <p data-i18n="step3Body">Hide immediately when Codex is no longer active.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="detail section">
+        <div class="detail-copy">
+          <h2 data-i18n="detailTitle">Small by design.<br />Big on clarity.</h2>
+          <p data-i18n="detailBody">
+            Remaining quota, next reset time, and available reset credits appear on one compact line—without
+            another window or context switch.
+          </p>
+          <ul>
+            <li data-i18n="detailPoint1">Click-through and never takes focus</li>
+            <li data-i18n="detailPoint2">High-DPI and multi-monitor aware</li>
+            <li data-i18n="detailPoint3">Tray or menu-bar placement controls</li>
+          </ul>
+        </div>
+        <figure class="detail-preview">
+          <img
+            src="assets/product-preview.png"
+            alt="Codex Quota Overlay aligned beside a redacted conversation title"
+            data-i18n-alt="detailAlt"
+          />
+        </figure>
+      </section>
+
+      <section class="split section">
+        <div class="privacy-panel" id="privacy">
+          <span class="shield" aria-hidden="true">◇</span>
+          <h2 data-i18n="privacyTitle">No account scraping.<br />No secrets uploaded.</h2>
+          <p data-i18n="privacyBody">
+            Quota reads, foreground detection, and placement run locally. Public builds have no telemetry
+            endpoint configured.
+          </p>
+          <p data-i18n="privacyBody2">The site has no analytics, cookies, forms, or tracking pixels.</p>
+          <a href="https://github.com/cpys/codex-quota-overlay/blob/main/PRIVACY.md" data-i18n="privacyLink"
+            >Read the full privacy policy →</a
+          >
+        </div>
+
+        <div class="download-panel" id="download">
+          <h2 data-i18n="platformTitle">Choose your platform</h2>
+          <div class="download-row">
+            <div class="platform-mark windows" aria-hidden="true">⊞</div>
+            <div>
+              <h3>Windows 10/11</h3>
+              <p data-i18n="windowsBody">x64 setup installer</p>
+            </div>
+            <a
+              class="button button-download"
+              href="https://github.com/cpys/codex-quota-overlay/releases/download/v0.3.0/CodexQuotaOverlay-Windows-Setup-0.3.0-x64.exe"
+              data-i18n="download"
+              >Download</a
+            >
+          </div>
+          <div class="download-row mac-row">
+            <div class="platform-mark mac" aria-hidden="true">⌘</div>
+            <div>
+              <h3>macOS 12+</h3>
+              <label class="sr-only" for="mac-architecture" data-i18n="architecture">Architecture</label>
+              <select id="mac-architecture" aria-label="macOS architecture">
+                <option value="arm64">Apple Silicon</option>
+                <option value="x64">Intel x64</option>
+              </select>
+            </div>
+            <a
+              class="button button-download"
+              id="mac-download"
+              href="https://github.com/cpys/codex-quota-overlay/releases/download/v0.3.0/CodexQuotaOverlay-mac-0.3.0-arm64.dmg"
+              data-i18n="download"
+              >Download</a
+            >
+          </div>
+          <p class="download-note" data-i18n="unsignedNote">
+            Preview packages are unsigned. Verify the SHA-256 file on GitHub before opening.
+          </p>
+          <a
+            class="requirements"
+            href="https://github.com/cpys/codex-quota-overlay#support-matrix"
+            data-i18n="requirements"
+            >See system requirements →</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand" href="#top">
+        <img src="assets/app-icon.png" alt="" width="28" height="28" />
+        <span>Codex Quota Overlay</span>
+      </a>
+      <p data-i18n="footer">MIT licensed · Not affiliated with OpenAI</p>
+      <div>
+        <a href="https://github.com/cpys/codex-quota-overlay/blob/main/SUPPORT.md" data-i18n="support"
+          >Support</a
+        >
+        <a href="https://github.com/cpys/codex-quota-overlay/blob/main/SECURITY.md" data-i18n="security"
+          >Security</a
+        >
+        <a href="https://github.com/cpys/codex-quota-overlay/releases" data-i18n="releases">Releases</a>
+      </div>
+    </footer>
+    <script src="site.js" defer></script>
+  </body>
+</html>

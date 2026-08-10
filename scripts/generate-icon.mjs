@@ -99,7 +99,7 @@ function crc32(buffer) {
   let crc = 0xffffffff;
   for (const byte of buffer) {
     crc ^= byte;
-    for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+    for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
   }
   return (crc ^ 0xffffffff) >>> 0;
 }
