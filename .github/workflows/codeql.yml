@@ -45,4 +45,4 @@ jobs:
       - name: Build C# helper for analysis
         if: matrix.language == 'csharp'
         run: npm run native
-      - uses: github/codeql-action/analyze@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3
+      - uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
