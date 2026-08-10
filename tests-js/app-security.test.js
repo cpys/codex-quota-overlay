@@ -39,6 +39,13 @@ test('packaging enables Electron integrity fuses', () => {
   assert.equal(metadata.build.electronFuses.onlyLoadAppFromAsar, true);
 });
 
+test('Windows packaging falls back when the installed Electron runtime is absent', () => {
+  const source = read('scripts/build-windows.mjs');
+  assert.match(source, /existsSync\(electronExecutable\)/);
+  assert.match(source, /--config\.electronDist=/);
+  assert.match(source, /electron-builder will download it/);
+});
+
 test('website download links match the release version', () => {
   const version = read('VERSION').trim();
   const siteSource = `${read('site/index.html')}\n${read('site/site.js')}`;

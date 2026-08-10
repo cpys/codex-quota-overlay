@@ -46,7 +46,7 @@
     "typecheck": "tsc --project tsconfig.json",
     "verify": "npm run lint && npm run format:check && npm run typecheck && npm run test:coverage && npm run test:telemetry && npm run test:host && npm run smoke",
     "sbom": "node scripts/generate-sbom.mjs",
-    "dist:win": "npm run icon && npm run native && electron-builder --win dir --x64 --config.electronDist=node_modules/electron/dist --publish never",
+    "dist:win": "npm run icon && npm run native && node scripts/build-windows.mjs",
     "dist:mac": "npm run icon && npm run native && electron-builder --mac dmg zip --x64 --arm64 --publish never"
   },
   "devDependencies": {
