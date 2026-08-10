@@ -108,6 +108,7 @@ jobs:
           test "$host_arch" != "arm64" || package_arch="arm64"
           unzip -q "artifacts/release-macos/CodexQuotaOverlay-mac-${version}-${package_arch}.zip" -d "$RUNNER_TEMP/cqo-app"
           app_path="$RUNNER_TEMP/cqo-app/CodexQuotaOverlay.app"
+          codesign --force --deep --sign - "$app_path"
           codesign --verify --deep --strict --verbose=2 "$app_path"
           marker="$RUNNER_TEMP/cqo-macos-self-test.json"
           "$app_path/Contents/MacOS/CodexQuotaOverlay" "--self-test=$marker"
