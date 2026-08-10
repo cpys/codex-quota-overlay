@@ -24,7 +24,7 @@ jobs:
             os: windows-latest
             build-mode: manual
           - language: swift
-            os: macos-14
+            os: macos-15-intel
             build-mode: manual
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
