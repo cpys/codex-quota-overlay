@@ -84,13 +84,40 @@ jobs:
         with:
           path: release-assets
           merge-multiple: true
+      - name: Resolve release version
+        id: version
+        shell: bash
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
       - name: Publish GitHub pre-release
         uses: softprops/action-gh-release@v2
         with:
           prerelease: true
           generate_release_notes: true
           body: |
-            Windows is verified on a physical Windows 11 host.
-            macOS packages are automated preview builds pending final validation on a physical Mac.
-            The macOS build is not notarized; use right-click > Open for this preview.
+            ## 下载 / Downloads
+
+            ### 🪟 Windows 10/11（x64）
+
+            - **推荐 / Recommended:** [安装版 Setup EXE](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-Windows-Setup-${{ steps.version.outputs.value }}-x64.exe)
+            - [便携版 Portable ZIP](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-Windows-Portable-${{ steps.version.outputs.value }}-x64.zip)
+            - [Windows SHA-256 校验文件](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/SHA256SUMS-Windows-${{ steps.version.outputs.value }}.txt)
+
+            ### 🍎 macOS — Apple Silicon（arm64）
+
+            - **推荐 / Recommended:** [DMG 安装包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-mac-${{ steps.version.outputs.value }}-arm64.dmg)
+            - [ZIP 压缩包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-mac-${{ steps.version.outputs.value }}-arm64.zip)
+
+            ### 🍎 macOS — Intel（x64）
+
+            - **推荐 / Recommended:** [DMG 安装包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-mac-${{ steps.version.outputs.value }}-x64.dmg)
+            - [ZIP 压缩包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-mac-${{ steps.version.outputs.value }}-x64.zip)
+            - [macOS SHA-256 校验文件](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/SHA256SUMS-macOS-${{ steps.version.outputs.value }}.txt)
+
+            ## 验证状态 / Validation
+
+            - Windows: verified on a physical Windows 11 host.
+            - macOS: automated preview builds validated on a macOS runner; physical-Mac acceptance is pending.
+            - Linux: no package because there is no official Codex Desktop app for Linux.
+
+            > Windows and macOS preview builds are not commercially code-signed. The macOS build is not notarized; use right-click → Open for this preview.
           files: release-assets/*
