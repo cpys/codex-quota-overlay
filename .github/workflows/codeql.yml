@@ -39,12 +39,18 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        if: matrix.build-mode == 'manual'
+        if: matrix.language == 'csharp'
         with:
           node-version: 24
           cache: npm
       - run: npm ci
-        if: matrix.build-mode == 'manual'
-      - run: npm run native
-        if: matrix.build-mode == 'manual'
+        if: matrix.language == 'csharp'
+      - name: Build C# helper for analysis
+        if: matrix.language == 'csharp'
+        run: npm run native
+      - name: Build Swift helper for analysis
+        if: matrix.language == 'swift'
+        run: >-
+          xcrun swiftc -O -framework Cocoa -framework CoreGraphics
+          native/macos/ActiveWindowHelper.swift -o "$RUNNER_TEMP/active-window-helper"
       - uses: github/codeql-action/analyze@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3
