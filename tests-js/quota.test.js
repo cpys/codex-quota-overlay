@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseQuotaResult, quotaView} from '../src/core/quota.js';
+import {formatCountdown, parseQuotaResult, quotaView} from '../src/core/quota.js';
 
 test('parses quota and available reset cards into one line', () => {
   const snapshot = parseQuotaResult({
@@ -24,4 +24,43 @@ test('parses quota and available reset cards into one line', () => {
 
 test('rejects a response without primary quota data', () => {
   assert.equal(parseQuotaResult({rateLimits: {}}), null);
+});
+
+test('parses multi-bucket and secondary quota windows from the current protocol', () => {
+  const snapshot = parseQuotaResult({
+    rateLimits: {
+      limitId: 'codex',
+      primary: {usedPercent: 12, resetsAt: 1760000000, windowDurationMins: 300},
+      secondary: {usedPercent: 44, resetsAt: 1760500000, windowDurationMins: 10080}
+    },
+    rateLimitsByLimitId: {
+      codex: {
+        limitId: 'codex',
+        primary: {usedPercent: 12, resetsAt: 1760000000, windowDurationMins: 300}
+      },
+      codex_other: {
+        limitName: 'Other',
+        primary: {usedPercent: 61, resetsAt: 1760100000, windowDurationMins: 60}
+      }
+    }
+  });
+  assert.equal(snapshot.buckets.length, 2);
+  assert.equal(snapshot.buckets[0].windows.length, 2);
+  assert.equal(snapshot.buckets[1].limitId, 'codex_other');
+  assert.equal(snapshot.windowDurationMins, 300);
+});
+
+test('renders compact and insight overlay modes', () => {
+  const now = new Date('2025-10-09T00:00:00Z');
+  const snapshot = {usedPercent: 36, resetsAt: now.getTime() / 1000 + 3900, resetCount: 0, resetCards: []};
+  const compact = quotaView(snapshot, 'en-US', now, {mode: 'compact'});
+  assert.match(compact.text, /^64% left {2}· {2}Reset in 1h 5m$/);
+  const insight = quotaView(snapshot, 'zh-CN', now, {
+    mode: 'insight',
+    insights: {burnRatePerHour: 12.45, status: 'risk', exhaustsAt: now.getTime() + 3600000}
+  });
+  assert.match(insight.text, /消耗 12%\/时/);
+  assert.match(insight.text, /预计 \d{2}:\d{2} 用尽/);
+  assert.equal(insight.accent, '#ff8a65');
+  assert.equal(formatCountdown(0, 'zh-CN', now), '重置未知');
 });

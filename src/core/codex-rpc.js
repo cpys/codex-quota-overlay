@@ -3,6 +3,7 @@ import {spawn} from 'node:child_process';
 import readline from 'node:readline';
 import os from 'node:os';
 import {parseQuotaResult} from './quota.js';
+import {parseUsageResult} from './usage.js';
 
 function errorDetail(error) {
   if (error && typeof error === 'object' && 'code' in error) return String(error.code);
@@ -19,6 +20,7 @@ export class CodexRpcClient extends EventEmitter {
     this.initialized = false;
     this.nextRequestId = 10;
     this.pendingRateLimitIds = new Set();
+    this.pendingUsageIds = new Set();
     this.disposed = false;
   }
 
@@ -61,10 +63,19 @@ export class CodexRpcClient extends EventEmitter {
     return true;
   }
 
+  requestUsage() {
+    if (!this.initialized || !this.running) return false;
+    const id = ++this.nextRequestId;
+    this.pendingUsageIds.add(id);
+    this.#send({method: 'account/usage/read', id});
+    return true;
+  }
+
   stop() {
     this.disposed = true;
     this.initialized = false;
     this.pendingRateLimitIds.clear();
+    this.pendingUsageIds.clear();
     if (this.process && this.process.exitCode === null) this.process.kill();
     this.process = null;
   }
@@ -84,6 +95,7 @@ export class CodexRpcClient extends EventEmitter {
       this.initialized = true;
       this.#send({method: 'initialized', params: {}});
       this.requestRateLimits();
+      this.requestUsage();
       return;
     }
     if (message.method === 'account/rateLimits/updated') {
@@ -99,6 +111,17 @@ export class CodexRpcClient extends EventEmitter {
       const snapshot = parseQuotaResult(message.result);
       if (snapshot) this.emit('quota', snapshot);
       else this.emit('failure', {code: 'E04', detail: 'invalid response'});
+      return;
+    }
+    if (this.pendingUsageIds.has(message.id)) {
+      this.pendingUsageIds.delete(message.id);
+      if (message.error) {
+        this.emit('usage-unavailable');
+        return;
+      }
+      const snapshot = parseUsageResult(message.result);
+      if (snapshot) this.emit('usage', snapshot);
+      else this.emit('usage-unavailable');
     }
   }
 

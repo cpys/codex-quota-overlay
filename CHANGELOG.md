@@ -9,6 +9,34 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - Code-signed Windows installer.
 - Configured privacy-preserving telemetry endpoint after infrastructure review.
 
+## [0.4.0] - 2026-08-23
+
+### Added
+
+- On-demand Quota Center with a responsive local dashboard for remaining quota, reset countdown, all reported limit windows, activity totals, and recent daily usage.
+- Compact, balanced, and insight overlay modes with a visual remaining-quota meter.
+- Current-cycle burn-rate, safe-pace, exhaustion-time, confidence, and pace-risk estimates.
+- Session trend history plus explicit opt-in 7/14/30/90-day local persistence with bounded, compressed samples and one-click clearing.
+- Optional once-per-cycle notifications for a 10/20/30% threshold or predicted early exhaustion.
+- `--dashboard` startup/second-instance command and tray-icon double-click access.
+- Dashboard interaction/responsive preview tooling and expanded Electron smoke coverage.
+
+### Changed
+
+- Parse all rate-limit buckets and primary/secondary windows instead of reducing the response to a single window.
+- Read the documented `account/usage/read` aggregate activity fields when available; quota remains independently functional if usage is unavailable.
+- Extend packaged-application self-tests to load both the overlay and the isolated Quota Center preload/renderer path.
+- Publish Windows installer and portable assets as a stable release while retaining automated macOS compatibility validation without distributing macOS packages.
+
+### Privacy
+
+- Keep history session-only and alerts disabled by default.
+- When history persistence is enabled, write only normalized percentages, timestamps, reset/window metadata, and a sanitized limit identifier; never persist activity/token summaries or raw responses.
+
+### Security
+
+- Added a dedicated sandboxed dashboard preload with sender/frame validation and an allowlisted settings patch surface.
+
 ## [0.3.0] - 2026-08-10
 
 ### Added
@@ -59,7 +87,8 @@ All notable changes are documented here. The project follows [Semantic Versionin
 - Inno Setup installer, portable archive, SHA-256 checksums, CI, and tag-based GitHub Releases.
 - English and Simplified Chinese documentation.
 
-[Unreleased]: https://github.com/cpys/codex-quota-overlay/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/cpys/codex-quota-overlay/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/cpys/codex-quota-overlay/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/cpys/codex-quota-overlay/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/cpys/codex-quota-overlay/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/cpys/codex-quota-overlay/releases/tag/v0.1.0

@@ -1,13 +1,15 @@
 {
   "name": "codex-quota-overlay",
-  "version": "0.3.0",
-  "description": "A privacy-friendly Codex quota overlay for Windows and macOS.",
+  "version": "0.4.0",
+  "description": "A privacy-friendly Codex quota overlay and local pace dashboard for Windows.",
   "keywords": [
     "codex",
     "codex-desktop",
+    "dashboard",
     "electron",
     "macos",
     "quota",
+    "rate-limit",
     "windows"
   ],
   "type": "module",
@@ -39,6 +41,7 @@
     "test:telemetry": "node --test telemetry/worker/test/*.test.js",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/core/*.js --test-coverage-lines=90 --test-coverage-branches=60 --test-coverage-functions=80 tests-js/*.test.js",
     "test:host": "node scripts/host-simulation.mjs",
+    "preview:ui": "node scripts/ui-preview.mjs",
     "smoke": "electron scripts/electron-smoke.cjs",
     "lint": "eslint src scripts site tests-js telemetry/worker/src telemetry/worker/test",
     "format": "prettier --write .",

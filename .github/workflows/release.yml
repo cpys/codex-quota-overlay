@@ -47,7 +47,7 @@ jobs:
             artifacts/release/SBOM-*.cdx.json
           if-no-files-found: error
 
-  macos:
+  macos-validation:
     runs-on: macos-14
     timeout-minutes: 45
     env:
@@ -66,33 +66,26 @@ jobs:
       - run: npm audit --audit-level=high
       - run: npm run verify
       - run: npm run dist:mac
-      - name: Verify and collect macOS assets
+      - name: Verify macOS packages without publishing them
         run: |
           version="$(tr -d '\r\n' < VERSION)"
-          mkdir -p artifacts/release-macos "$RUNNER_TEMP/cqo-app"
-          cp artifacts/electron/CodexQuotaOverlay-mac-*.dmg artifacts/release-macos/
-          cp artifacts/electron/CodexQuotaOverlay-mac-*.zip artifacts/release-macos/
-          for dmg in artifacts/release-macos/*.dmg; do hdiutil verify "$dmg"; done
+          mkdir -p "$RUNNER_TEMP/cqo-app"
+          test "$(find artifacts/electron -name 'CodexQuotaOverlay-mac-*.dmg' | wc -l | tr -d ' ')" = "2"
+          test "$(find artifacts/electron -name 'CodexQuotaOverlay-mac-*.zip' | wc -l | tr -d ' ')" = "2"
+          for dmg in artifacts/electron/CodexQuotaOverlay-mac-*.dmg; do hdiutil verify "$dmg"; done
           host_arch="$(uname -m)"
           package_arch="x64"
           test "$host_arch" != "arm64" || package_arch="arm64"
-          unzip -q "artifacts/release-macos/CodexQuotaOverlay-mac-${version}-${package_arch}.zip" -d "$RUNNER_TEMP/cqo-app"
+          unzip -q "artifacts/electron/CodexQuotaOverlay-mac-${version}-${package_arch}.zip" -d "$RUNNER_TEMP/cqo-app"
           app_path="$RUNNER_TEMP/cqo-app/CodexQuotaOverlay.app"
           codesign --force --deep --sign - "$app_path"
           codesign --verify --deep --strict --verbose=2 "$app_path"
           marker="$RUNNER_TEMP/cqo-macos-self-test.json"
           "$app_path/Contents/MacOS/CodexQuotaOverlay" "--self-test=$marker"
           node -e "const r=require(process.argv[1]); if(!r.ok||!r.packaged||r.platform!=='darwin'||r.version!==process.argv[2]) process.exit(1)" "$marker" "$version"
-          cd artifacts/release-macos
-          shasum -a 256 CodexQuotaOverlay-mac-* > "SHA256SUMS-macOS-${version}.txt"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: macos-release
-          path: artifacts/release-macos/*
-          if-no-files-found: error
 
   publish:
-    needs: [windows, macos]
+    needs: [windows, macos-validation]
     runs-on: ubuntu-latest
     permissions:
       attestations: write
@@ -101,8 +94,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
+          name: windows-release
           path: release-assets
-          merge-multiple: true
       - name: Resolve release version
         id: version
         run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
@@ -110,10 +103,11 @@ jobs:
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
         with:
           subject-path: release-assets/*
-      - name: Publish GitHub pre-release
+      - name: Publish stable Windows release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
-          prerelease: true
+          prerelease: false
+          make_latest: true
           generate_release_notes: true
           body: |
             ## 下载 / Downloads
@@ -124,17 +118,6 @@ jobs:
             - [便携版 Portable ZIP](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-Windows-Portable-${{ steps.version.outputs.value }}-x64.zip)
             - [Windows SHA-256](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/SHA256SUMS-Windows-${{ steps.version.outputs.value }}.txt)
 
-            ### 🍎 macOS — Apple Silicon（arm64）
-
-            - **推荐 / Recommended:** [DMG 安装包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-mac-${{ steps.version.outputs.value }}-arm64.dmg)
-            - [ZIP 压缩包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-mac-${{ steps.version.outputs.value }}-arm64.zip)
-
-            ### 🍎 macOS — Intel（x64）
-
-            - **推荐 / Recommended:** [DMG 安装包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-mac-${{ steps.version.outputs.value }}-x64.dmg)
-            - [ZIP 压缩包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/CodexQuotaOverlay-mac-${{ steps.version.outputs.value }}-x64.zip)
-            - [macOS SHA-256](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/SHA256SUMS-macOS-${{ steps.version.outputs.value }}.txt)
-
             ### 供应链 / Supply chain
 
             - [CycloneDX SBOM](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/SBOM-${{ steps.version.outputs.value }}.cdx.json)
@@ -143,8 +126,8 @@ jobs:
             ## 验证状态 / Validation
 
             - Windows: physical Windows 11 verification plus packaged and installed CI self-tests.
-            - macOS: packaged app, DMG, signature-structure, and host-architecture CI checks; physical-Mac acceptance remains pending.
+            - macOS: source compatibility, dual-architecture packages, DMG structure, signature structure, and the host-architecture packaged self-test are validated on GitHub's macOS 14 environment. No macOS assets are distributed in this release.
             - Linux: no package because there is no official Codex Desktop app for Linux.
 
-            > Preview packages are not commercially code-signed. The macOS build is not notarized; verify checksums and use right-click → Open only if local policy permits.
+            > The Windows package is not commercially code-signed. Verify its checksum before opening.
           files: release-assets/*

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <title>Codex Quota Center</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">C</div>
+        <div>
+          <div class="brand-row">
+            <h1>Quota Center</h1>
+            <span id="local-badge" class="badge badge-local">仅本机</span>
+          </div>
+          <p id="subtitle">把额度数字变成可执行的使用节奏</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span id="connection-pill" class="status-pill" data-status="inactive">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="connection-text">等待 Codex</span>
+        </span>
+        <button id="refresh-button" class="button button-primary" type="button">立即刷新</button>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero-grid" aria-label="Current quota overview">
+        <article class="panel quota-hero">
+          <div class="section-heading compact-heading">
+            <div>
+              <span id="current-window-label" class="eyebrow">当前额度窗口</span>
+              <h2 id="quota-title">Codex</h2>
+            </div>
+            <span id="updated-label" class="muted-label">尚未读取</span>
+          </div>
+          <div class="quota-main">
+            <div id="quota-ring" class="quota-ring">
+              <div class="quota-ring-inner">
+                <strong id="remaining-value">--</strong>
+                <span id="remaining-label">剩余</span>
+              </div>
+            </div>
+            <div class="quota-copy">
+              <span id="pace-badge" class="pace-badge" data-status="learning">正在学习节奏</span>
+              <h3 id="reset-countdown">打开 Codex 后读取额度</h3>
+              <p id="reset-moment">仪表盘不会读取会话、项目或账户内容。</p>
+            </div>
+          </div>
+        </article>
+
+        <div class="metric-grid">
+          <article class="metric-card">
+            <span id="burn-label" class="metric-label">当前消耗</span>
+            <strong id="burn-value" class="metric-value">--</strong>
+            <small id="burn-detail">至少观察 2 分钟后估算</small>
+          </article>
+          <article class="metric-card">
+            <span id="safe-label" class="metric-label">安全速度</span>
+            <strong id="safe-value" class="metric-value">--</strong>
+            <small id="safe-detail">重置前可持续的平均速度</small>
+          </article>
+          <article class="metric-card">
+            <span id="forecast-label" class="metric-label">预计用尽</span>
+            <strong id="forecast-value" class="metric-value">--</strong>
+            <small id="forecast-detail">数据越多，预测越稳定</small>
+          </article>
+          <article class="metric-card">
+            <span id="confidence-label" class="metric-label">预测可信度</span>
+            <strong id="confidence-value" class="metric-value">学习中</strong>
+            <small id="confidence-detail">当前周期 0 个采样点</small>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel history-panel">
+        <div class="section-heading">
+          <div>
+            <span id="trend-eyebrow" class="eyebrow">额度趋势</span>
+            <h2 id="trend-title">本周期剩余比例</h2>
+          </div>
+          <span id="history-mode" class="badge">仅本次运行</span>
+        </div>
+        <div class="chart-wrap">
+          <svg id="history-chart" viewBox="0 0 760 220" role="img" aria-label="Quota remaining history"></svg>
+          <div id="history-empty" class="chart-empty">
+            <strong>正在建立趋势</strong>
+            <span>额度变化后会在这里形成曲线。</span>
+          </div>
+        </div>
+        <div class="chart-axis-labels">
+          <span id="chart-start">--</span>
+          <span id="chart-caption">剩余额度</span>
+          <span id="chart-end">--</span>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel">
+          <div class="section-heading">
+            <div>
+              <span id="windows-eyebrow" class="eyebrow">所有限制</span>
+              <h2 id="windows-title">额度窗口</h2>
+            </div>
+            <span id="window-count" class="muted-label">0 个</span>
+          </div>
+          <div id="quota-windows" class="window-list"></div>
+          <div id="windows-empty" class="empty-state">尚未收到额度窗口。</div>
+        </article>
+
+        <article class="panel">
+          <div class="section-heading">
+            <div>
+              <span id="activity-eyebrow" class="eyebrow">只读统计</span>
+              <h2 id="activity-title">Codex 活跃度</h2>
+            </div>
+            <span id="streak-badge" class="badge">-- 天连续</span>
+          </div>
+          <div id="activity-summary" class="activity-summary"></div>
+          <div id="usage-bars" class="usage-bars" aria-label="Daily token activity"></div>
+          <div id="activity-empty" class="empty-state">当前登录方式未提供活跃度统计。</div>
+        </article>
+      </section>
+
+      <section class="panel settings-panel">
+        <div class="section-heading">
+          <div>
+            <span id="preferences-eyebrow" class="eyebrow">偏好设置</span>
+            <h2 id="preferences-title">显示、提醒与隐私</h2>
+          </div>
+          <span id="save-state" class="muted-label">自动保存</span>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
+            <strong id="overlay-density-title">悬浮条信息密度</strong>
+            <span id="overlay-density-description">精简适合小窗口，洞察模式会加入消耗速度。</span>
+          </div>
+          <div id="overlay-mode-control" class="segmented" role="group" aria-label="Overlay detail">
+            <button type="button" data-mode="compact">精简</button>
+            <button type="button" data-mode="balanced">标准</button>
+            <button type="button" data-mode="insight">洞察</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
+            <strong id="alerts-title">智能提醒</strong>
+            <span id="alerts-description">低额度或预测提前用尽时，每个周期只提醒一次。</span>
+          </div>
+          <div class="inline-controls">
+            <label class="select-label" for="alert-threshold">
+              <span id="threshold-label">提醒线</span>
+              <select id="alert-threshold">
+                <option value="10">10%</option>
+                <option value="20">20%</option>
+                <option value="30">30%</option>
+              </select>
+            </label>
+            <label class="switch-label">
+              <input id="alerts-enabled" type="checkbox" />
+              <span class="switch" aria-hidden="true"></span>
+              <span id="alerts-enabled-label">启用</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-copy">
+            <strong id="history-title">本地历史</strong>
+            <span id="history-description">默认只保留本次运行；开启后仅保存额度百分比和时间。</span>
+          </div>
+          <div class="inline-controls">
+            <label class="select-label" for="history-retention">
+              <span id="retention-label">保留</span>
+              <select id="history-retention">
+                <option value="7">7 天</option>
+                <option value="14">14 天</option>
+                <option value="30">30 天</option>
+                <option value="90">90 天</option>
+              </select>
+            </label>
+            <label class="switch-label">
+              <input id="history-enabled" type="checkbox" />
+              <span class="switch" aria-hidden="true"></span>
+              <span id="history-enabled-label">落盘</span>
+            </label>
+            <button id="clear-history-button" class="button button-secondary button-danger" type="button">
+              清空
+            </button>
+          </div>
+        </div>
+
+        <div id="clear-confirm" class="confirm-strip" hidden>
+          <span id="clear-confirm-text">确定清空本次运行和本地历史吗？此操作无法撤销。</span>
+          <div>
+            <button id="cancel-clear-button" class="button button-ghost" type="button">取消</button>
+            <button id="confirm-clear-button" class="button button-danger-solid" type="button">
+              确认清空
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="diagnostic-bar">
+        <div>
+          <span id="diagnostic-label" class="eyebrow">短诊断</span>
+          <code id="diagnostic-code">W01 | Waiting</code>
+        </div>
+        <div class="footer-actions">
+          <span id="privacy-note">不含账户、路径、会话、Token 或原始响应</span>
+          <button id="copy-diagnostics-button" class="button button-ghost" type="button">复制</button>
+        </div>
+      </footer>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="dashboard.js"></script>
+  </body>
+</html>

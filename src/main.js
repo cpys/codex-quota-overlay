@@ -9,13 +9,17 @@ import {
   ipcMain,
   Menu,
   nativeImage,
+  Notification,
   screen,
   shell,
   Tray
 } from 'electron';
 import {CodexRpcClient} from './core/codex-rpc.js';
+import {QuotaAlertTracker} from './core/alerts.js';
 import {findCodexExecutable} from './core/codex-path.js';
 import {Diagnostics, diagnosticMessage} from './core/diagnostics.js';
+import {QuotaHistoryStore} from './core/history.js';
+import {calculateQuotaInsights} from './core/insights.js';
 import {placeOverlay} from './core/placement.js';
 import {quotaView} from './core/quota.js';
 import {SettingsStore} from './core/settings.js';
@@ -30,12 +34,16 @@ const packageMetadata = JSON.parse(fs.readFileSync(path.join(packageRoot, 'packa
 const VERSION = packageMetadata.version;
 const POLL_INTERVAL_MS = 250;
 const QUOTA_REFRESH_MS = 60_000;
+const USAGE_REFRESH_MS = 15 * 60_000;
 
 let overlayWindow;
+let dashboardWindow;
 let tray;
 let settings;
 let telemetry;
 let diagnostics;
+let history;
+let alerts;
 let activeWindowProvider;
 let rpc;
 let overlaySize = {width: 520, height: 43};
@@ -43,21 +51,30 @@ let currentTargetBounds;
 let pollTimer;
 let polling = false;
 let lastQuotaReadAt = 0;
+let lastUsageReadAt = 0;
 let missingSince = 0;
 let shuttingDown = false;
 let locale = 'zh-CN';
+let latestQuota;
+let latestUsage;
+let latestInsights;
+let lastQuotaUpdatedAt = 0;
+let connectionStatus = 'inactive';
+let dashboardIpcRegistered = false;
 
 configureUserDataPath();
 const selfTestPath = process.argv
   .find((argument) => argument.startsWith('--self-test='))
   ?.slice('--self-test='.length);
 const shutdownRequested = process.argv.includes('--shutdown');
+const dashboardRequested = process.argv.includes('--dashboard');
 const hasLock = Boolean(selfTestPath) || app.requestSingleInstanceLock();
 if (!hasLock || shutdownRequested) {
   app.quit();
 } else {
   app.on('second-instance', (_event, commandLine) => {
     if (commandLine.includes('--shutdown')) quitApplication();
+    else if (commandLine.includes('--dashboard')) showDashboard();
   });
 }
 
@@ -72,22 +89,54 @@ app.whenReady().then(async () => {
       app.exit(2);
     }, 10_000);
     try {
+      locale = app.getLocale() || 'zh-CN';
+      diagnostics = new Diagnostics(locale);
+      settings = new SettingsStore(path.join(app.getPath('userData'), 'settings.json'));
+      const currentSettings = settings.get();
+      history = new QuotaHistoryStore(path.join(app.getPath('userData'), 'quota-history.json'), {
+        enabled: false,
+        retentionDays: currentSettings.history.retentionDays
+      });
+      alerts = new QuotaAlertTracker();
+      registerDashboardIpc();
       await createOverlayWindow();
-      const render = await overlayWindow.webContents.executeJavaScript(`(() => {
+      await createDashboardWindow({show: false});
+      const overlayRender = await overlayWindow.webContents.executeJavaScript(`(() => {
         const card = document.querySelector('#card');
         const bounds = card?.getBoundingClientRect();
         return {text: card?.textContent?.trim(), width: Math.ceil(bounds?.width || 0), height: Math.ceil(bounds?.height || 0)};
       })()`);
+      const dashboardRender = await dashboardWindow.webContents.executeJavaScript(`(async () => {
+        const bridgeState = await window.quotaCenter?.getState?.();
+        return {
+          bridgeVersion: bridgeState?.version,
+          title: document.title,
+          remaining: document.querySelector('#remaining-value')?.textContent?.trim(),
+          sections: document.querySelectorAll('main section').length,
+          shell: Boolean(document.querySelector('.page-shell'))
+        };
+      })()`);
       const result = {
-        ok: Boolean(render.text && render.width >= 140 && render.height >= 32),
+        dashboard: dashboardRender,
+        ok: Boolean(
+          overlayRender.text &&
+          overlayRender.width >= 140 &&
+          overlayRender.height >= 32 &&
+          dashboardRender.title === 'Codex Quota Center' &&
+          dashboardRender.bridgeVersion === VERSION &&
+          dashboardRender.remaining &&
+          dashboardRender.sections >= 3 &&
+          dashboardRender.shell
+        ),
+        overlay: overlayRender,
         packaged: app.isPackaged,
         platform: process.platform,
-        render,
         stage: 'complete',
         version: VERSION
       };
       writeSelfTest(result);
       clearTimeout(timeout);
+      dashboardWindow.destroy();
       overlayWindow.destroy();
       app.exit(result.ok ? 0 : 1);
     } catch (error) {
@@ -113,6 +162,13 @@ app.whenReady().then(async () => {
   });
   activeWindowProvider.start();
   settings = new SettingsStore(path.join(app.getPath('userData'), 'settings.json'));
+  const currentSettings = settings.get();
+  history = new QuotaHistoryStore(path.join(app.getPath('userData'), 'quota-history.json'), {
+    enabled: currentSettings.history.enabled,
+    retentionDays: currentSettings.history.retentionDays
+  });
+  alerts = new QuotaAlertTracker();
+  registerDashboardIpc();
   telemetry = new TelemetryClient({
     endpoint: process.env.CQO_TELEMETRY_ENDPOINT || packageMetadata.cqo?.telemetryEndpoint || '',
     version: VERSION,
@@ -122,6 +178,7 @@ app.whenReady().then(async () => {
   });
   await createOverlayWindow();
   createTray();
+  if (dashboardRequested) await showDashboard();
   await tick();
   pollTimer = setInterval(tick, POLL_INTERVAL_MS);
   pollTimer.unref?.();
@@ -204,6 +261,7 @@ function createTray() {
   }
   tray = new Tray(icon);
   tray.setToolTip(isChinese() ? 'Codex 额度悬浮层' : 'Codex Quota Overlay');
+  tray.on('double-click', showDashboard);
   rebuildTrayMenu();
 }
 
@@ -225,7 +283,37 @@ function rebuildTrayMenu() {
   const template = [
     {label: `Codex Quota Overlay v${VERSION}`, enabled: false},
     {type: 'separator'},
+    menuItem(isChinese() ? '打开 Quota Center…' : 'Open Quota Center…', showDashboard),
     menuItem(isChinese() ? '立即刷新' : 'Refresh now', () => requestQuota(true)),
+    {
+      label: isChinese() ? '悬浮条信息密度' : 'Overlay detail',
+      submenu: [
+        overlayModeItem('compact', isChinese() ? '精简' : 'Compact'),
+        overlayModeItem('balanced', isChinese() ? '标准' : 'Balanced'),
+        overlayModeItem('insight', isChinese() ? '洞察' : 'Insight')
+      ]
+    },
+    {
+      label: isChinese() ? '智能提醒' : 'Smart alerts',
+      submenu: [
+        {
+          label: isChinese() ? '启用提醒' : 'Enable alerts',
+          type: 'checkbox',
+          checked: settings.get().alerts.enabled,
+          click: (item) => applyPreferences({alerts: {enabled: item.checked}})
+        },
+        {type: 'separator'},
+        alertThresholdItem(10),
+        alertThresholdItem(20),
+        alertThresholdItem(30)
+      ]
+    },
+    {
+      label: isChinese() ? '保存 30 天本地历史' : 'Save 30-day local history',
+      type: 'checkbox',
+      checked: settings.get().history.enabled,
+      click: (item) => applyPreferences({history: {enabled: item.checked}})
+    },
     {
       label: isChinese() ? '登录时自动启动' : 'Start at login',
       type: 'checkbox',
@@ -297,6 +385,26 @@ function menuItem(label, click) {
   return {label, click};
 }
 
+/** @returns {import('electron').MenuItemConstructorOptions} */
+function overlayModeItem(mode, label) {
+  return {
+    label,
+    type: 'radio',
+    checked: settings.get().overlayMode === mode,
+    click: () => applyPreferences({overlayMode: mode})
+  };
+}
+
+/** @returns {import('electron').MenuItemConstructorOptions} */
+function alertThresholdItem(threshold) {
+  return {
+    label: isChinese() ? `低于 ${threshold}%` : `Below ${threshold}%`,
+    type: 'radio',
+    checked: settings.get().alerts.threshold === threshold,
+    click: () => applyPreferences({alerts: {threshold}})
+  };
+}
+
 async function tick() {
   if (polling || shuttingDown || !overlayWindow) return;
   polling = true;
@@ -312,6 +420,7 @@ async function tick() {
     const classification = classifyTarget(windowInfo, process.platform);
     if (!classification.matched) {
       diagnostics.set(classification.code);
+      setConnectionStatus('inactive');
       hideOverlay();
       if (!missingSince) missingSince = Date.now();
       if (Date.now() - missingSince >= 5000) stopRpc();
@@ -319,7 +428,7 @@ async function tick() {
     }
 
     missingSince = 0;
-    diagnostics.clear();
+    if (!rpc?.running) setConnectionStatus('connecting');
     currentTargetBounds = normalizeBounds(windowInfo.bounds);
     positionOverlay(currentTargetBounds);
     overlayWindow.showInactive();
@@ -337,23 +446,47 @@ function ensureRpc() {
   const executable = findCodexExecutable({configuredPath: settings.get().codexCliPath});
   if (!executable) {
     diagnostics.set('E01');
+    setConnectionStatus('error');
     sendOverlayState({text: diagnosticMessage('E01', locale), accent: '#ff6767'});
     return;
   }
   sendOverlayState({text: isChinese() ? '正在读取额度…' : 'Reading quota…', accent: '#70b2ff'});
+  setConnectionStatus('connecting');
   rpc = new CodexRpcClient({executable, version: VERSION});
   rpc.on('quota', (snapshot) => {
-    const view = quotaView(snapshot, locale);
+    const now = Date.now();
+    latestQuota = snapshot;
+    lastQuotaUpdatedAt = now;
+    history.record(snapshot, now);
+    latestInsights = calculateQuotaInsights(history.getSamples(), snapshot, now);
+    const view = quotaView(snapshot, locale, new Date(now), {
+      mode: settings.get().overlayMode,
+      insights: latestInsights
+    });
     diagnostics.clear();
+    setConnectionStatus('ready');
     sendOverlayState(view);
     tray?.setToolTip(isChinese() ? `Codex 剩余 ${view.remaining}%` : `Codex ${view.remaining}% left`);
+    showQuotaAlerts(alerts.evaluate(snapshot, latestInsights, settings.get().alerts));
+    broadcastDashboardState();
+  });
+  rpc.on('usage', (snapshot) => {
+    latestUsage = snapshot;
+    lastUsageReadAt = Date.now();
+    broadcastDashboardState();
+  });
+  rpc.on('usage-unavailable', () => {
+    broadcastDashboardState();
   });
   rpc.on('failure', (failure) => {
     diagnostics.set(failure.code, failure.detail);
+    setConnectionStatus('error');
     sendOverlayState({text: diagnosticMessage(failure.code, locale), accent: '#ff6767'});
+    broadcastDashboardState();
   });
   rpc.start();
   lastQuotaReadAt = Date.now();
+  lastUsageReadAt = Date.now();
 }
 
 function requestQuota(force) {
@@ -363,6 +496,9 @@ function requestQuota(force) {
   }
   if (!force && Date.now() - lastQuotaReadAt < 20_000) return;
   if (rpc.requestRateLimits()) lastQuotaReadAt = Date.now();
+  if (force || Date.now() - lastUsageReadAt >= USAGE_REFRESH_MS) {
+    if (rpc.requestUsage()) lastUsageReadAt = Date.now();
+  }
 }
 
 function stopRpc() {
@@ -373,7 +509,14 @@ function stopRpc() {
 
 function sendOverlayState(state) {
   if (!overlayWindow || overlayWindow.isDestroyed()) return;
-  const payload = {text: String(state.text), accent: state.accent || '#70b2ff', locale};
+  const payload = {
+    text: String(state.text),
+    accent: state.accent || '#70b2ff',
+    locale,
+    mode: state.mode || settings?.get().overlayMode || 'balanced',
+    remaining: Number.isFinite(state.remaining) ? state.remaining : null,
+    status: state.status || 'unknown'
+  };
   if (overlayWindow.webContents.isLoading()) {
     overlayWindow.webContents.once('did-finish-load', () =>
       overlayWindow?.webContents.send('overlay:state', payload)
@@ -438,6 +581,7 @@ function quitApplication() {
   if (shuttingDown) return;
   cleanup();
   tray?.destroy();
+  dashboardWindow?.destroy();
   overlayWindow?.destroy();
   app.exit(0);
 }
@@ -448,6 +592,208 @@ function cleanup() {
   if (pollTimer) clearInterval(pollTimer);
   stopRpc();
   activeWindowProvider?.stop();
+}
+
+async function showDashboard() {
+  if (shuttingDown) return;
+  if (dashboardWindow && !dashboardWindow.isDestroyed()) {
+    dashboardWindow.show();
+    dashboardWindow.focus();
+    broadcastDashboardState();
+    return;
+  }
+  try {
+    await createDashboardWindow();
+  } catch (error) {
+    diagnostics.set('E04', error?.code ?? error?.name);
+  }
+}
+
+async function createDashboardWindow({show = true} = {}) {
+  const rendererPath = path.join(__dirname, 'renderer', 'dashboard.html');
+  const rendererUrl = pathToFileURL(rendererPath).href;
+  dashboardWindow = new BrowserWindow({
+    width: 960,
+    height: 760,
+    minWidth: 760,
+    minHeight: 620,
+    show: false,
+    backgroundColor: '#0b0e14',
+    autoHideMenuBar: true,
+    title: 'Codex Quota Center',
+    webPreferences: {
+      preload: path.join(__dirname, 'dashboard-preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+  dashboardWindow.webContents.setWindowOpenHandler(() => ({action: 'deny'}));
+  dashboardWindow.webContents.on('will-navigate', (event, targetUrl) => {
+    if (targetUrl !== rendererUrl) event.preventDefault();
+  });
+  dashboardWindow.on('closed', () => {
+    dashboardWindow = null;
+  });
+  await dashboardWindow.loadFile(rendererPath);
+  if (show) {
+    dashboardWindow.show();
+    dashboardWindow.focus();
+  }
+  broadcastDashboardState();
+  return dashboardWindow;
+}
+
+function registerDashboardIpc() {
+  if (dashboardIpcRegistered) return;
+  dashboardIpcRegistered = true;
+  ipcMain.handle('dashboard:get-state', (event) => {
+    assertDashboardSender(event);
+    return dashboardState();
+  });
+  ipcMain.handle('dashboard:update-settings', (event, patch) => {
+    assertDashboardSender(event);
+    applyPreferences(filterDashboardPatch(patch));
+    return dashboardState();
+  });
+  ipcMain.handle('dashboard:clear-history', (event) => {
+    assertDashboardSender(event);
+    history.clear();
+    latestInsights = latestQuota ? calculateQuotaInsights([], latestQuota) : null;
+    renderLatestQuota();
+    broadcastDashboardState();
+    return dashboardState();
+  });
+  ipcMain.handle('dashboard:refresh', (event) => {
+    assertDashboardSender(event);
+    requestQuota(true);
+    return dashboardState();
+  });
+  ipcMain.handle('dashboard:copy-diagnostics', (event) => {
+    assertDashboardSender(event);
+    clipboard.writeText(diagnostics.short());
+    return true;
+  });
+}
+
+function assertDashboardSender(event) {
+  const rendererUrl = pathToFileURL(path.join(__dirname, 'renderer', 'dashboard.html')).href;
+  if (
+    !dashboardWindow ||
+    dashboardWindow.isDestroyed() ||
+    event.sender !== dashboardWindow.webContents ||
+    event.senderFrame?.url !== rendererUrl
+  ) {
+    throw new Error('Invalid dashboard IPC sender');
+  }
+}
+
+function filterDashboardPatch(patch) {
+  const filtered = {};
+  if (['compact', 'balanced', 'insight'].includes(patch?.overlayMode)) {
+    filtered.overlayMode = patch.overlayMode;
+  }
+  if (patch?.history && typeof patch.history === 'object') {
+    filtered.history = {};
+    if (typeof patch.history.enabled === 'boolean') filtered.history.enabled = patch.history.enabled;
+    if ([7, 14, 30, 90].includes(Number(patch.history.retentionDays))) {
+      filtered.history.retentionDays = Number(patch.history.retentionDays);
+    }
+  }
+  if (patch?.alerts && typeof patch.alerts === 'object') {
+    filtered.alerts = {};
+    if (typeof patch.alerts.enabled === 'boolean') filtered.alerts.enabled = patch.alerts.enabled;
+    if ([10, 20, 30].includes(Number(patch.alerts.threshold))) {
+      filtered.alerts.threshold = Number(patch.alerts.threshold);
+    }
+    if (typeof patch.alerts.paceRisk === 'boolean') filtered.alerts.paceRisk = patch.alerts.paceRisk;
+  }
+  return filtered;
+}
+
+function applyPreferences(patch) {
+  const before = settings.get();
+  const next = settings.update(patch);
+  history.setRetentionDays(next.history.retentionDays);
+  history.setEnabled(next.history.enabled);
+  if (JSON.stringify(before.alerts) !== JSON.stringify(next.alerts)) alerts.reset();
+  if (latestQuota) latestInsights = calculateQuotaInsights(history.getSamples(), latestQuota);
+  renderLatestQuota();
+  rebuildTrayMenu();
+  broadcastDashboardState();
+}
+
+function renderLatestQuota() {
+  if (!latestQuota) return;
+  sendOverlayState(
+    quotaView(latestQuota, locale, new Date(), {
+      mode: settings.get().overlayMode,
+      insights: latestInsights
+    })
+  );
+}
+
+function dashboardState() {
+  const preferences = settings?.get();
+  const historyStatus = history?.status ?? {enabled: false, retentionDays: 30, sampleCount: 0};
+  const points = (history?.getSamples() ?? []).slice(-500).map((sample) => ({
+    at: sample.at,
+    limitId: sample.limitId,
+    resetsAt: sample.resetsAt,
+    usedPercent: sample.usedPercent
+  }));
+  return {
+    version: VERSION,
+    locale,
+    now: Date.now(),
+    connection: connectionStatus,
+    diagnostic: diagnostics?.short() ?? 'W01 | Waiting',
+    quota: latestQuota ?? null,
+    usage: latestUsage ?? null,
+    insights: latestInsights ?? null,
+    updatedAt: lastQuotaUpdatedAt || null,
+    history: {...historyStatus, points},
+    preferences: preferences
+      ? {
+          overlayMode: preferences.overlayMode,
+          history: preferences.history,
+          alerts: preferences.alerts
+        }
+      : null
+  };
+}
+
+function broadcastDashboardState() {
+  if (!dashboardWindow || dashboardWindow.isDestroyed() || dashboardWindow.webContents.isLoading()) return;
+  dashboardWindow.webContents.send('dashboard:state', dashboardState());
+}
+
+function setConnectionStatus(value) {
+  if (connectionStatus === value) return;
+  connectionStatus = value;
+  broadcastDashboardState();
+}
+
+function showQuotaAlerts(events) {
+  if (!events.length || !Notification.isSupported()) return;
+  for (const event of events) {
+    let title;
+    let body;
+    if (event.kind === 'threshold') {
+      title = isChinese() ? 'Codex 额度偏低' : 'Codex quota is low';
+      body = isChinese()
+        ? `当前剩余 ${event.remaining}%，达到你设置的 ${event.threshold}% 提醒线。`
+        : `${event.remaining}% remains, at your ${event.threshold}% alert threshold.`;
+    } else {
+      title = isChinese() ? '当前消耗速度偏快' : 'Current quota pace is high';
+      body = isChinese()
+        ? '按最近速度，额度可能在重置前用尽。可打开 Quota Center 查看预测。'
+        : 'At the recent pace, quota may run out before reset. Open Quota Center for the forecast.';
+    }
+    const notification = new Notification({title, body});
+    notification.on('click', showDashboard);
+    notification.show();
+  }
 }
 
 function isChinese() {

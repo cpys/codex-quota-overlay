@@ -1,13 +1,13 @@
-# Codex 额度悬浮层（Windows / macOS）
+# Codex 额度悬浮层（Windows）
 
 [![CI](https://github.com/cpys/codex-quota-overlay/actions/workflows/ci.yml/badge.svg)](https://github.com/cpys/codex-quota-overlay/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/cpys/codex-quota-overlay/actions/workflows/codeql.yml/badge.svg)](https://github.com/cpys/codex-quota-overlay/actions/workflows/codeql.yml)
 [![Release](https://img.shields.io/github/v/release/cpys/codex-quota-overlay?include_prereleases)](https://github.com/cpys/codex-quota-overlay/releases)
 [![License](https://img.shields.io/github/license/cpys/codex-quota-overlay)](LICENSE)
 
-[项目主页](https://cpys.github.io/codex-quota-overlay/) · [English](README.md) · [下载](https://github.com/cpys/codex-quota-overlay/releases/tag/v0.3.0) · [隐私说明](PRIVACY.zh-CN.md) · [支持](SUPPORT.md)
+[项目主页](https://cpys.github.io/codex-quota-overlay/) · [English](README.md) · [下载](https://github.com/cpys/codex-quota-overlay/releases/tag/v0.4.0) · [隐私说明](PRIVACY.zh-CN.md) · [支持](SUPPORT.md)
 
-Codex 额度悬浮层会在 Codex 当前会话标题旁，用一行显示剩余额度、下次重置时间和可用 Reset 卡；Codex 不在前台时，它会立即隐藏。
+Codex 额度悬浮层会把当前限制放在 Codex 会话标题旁，并把同一份本地数据整理成可操作的 Quota Center：消耗速度、预测、趋势、提醒和活跃度集中在一个界面。鼠标可穿透的悬浮条会在 Codex 离开前台时立即隐藏；仪表盘只在用户主动打开时出现。
 
 ![Codex 额度悬浮层](docs/images/preview.png)
 
@@ -18,22 +18,30 @@ Codex 额度悬浮层会在 Codex 当前会话标题旁，用一行显示剩余�
 
 ## 功能
 
-- 在同一行显示剩余额度百分比和下次重置时间。
+- 提供精简、标准、洞察三种悬浮条模式，可显示剩余额度、重置倒计时和近期消耗速度。
+- 从托盘/菜单栏或双击图标打开本地 Quota Center。
+- 展示服务返回的全部限制桶以及主要/次要周期，不再把多组限制悄悄压缩成一条。
+- 根据本周期采样估算近期消耗速度、可持续到重置的安全速度、可能用尽时间和预测可信度。
+- 本地 App Server 提供数据时，展示只读的 Codex 累计活跃度与近期每日用量。
+- 默认只在本次运行内保留趋势；主动开启后可保存 7/14/30/90 天，落盘内容仅含规范化百分比和时间，可随时从仪表盘清空。
+- 可在额度低于 10/20/30% 或预测会提前用尽时，每个限制周期提醒一次；提醒默认关闭。
 - 服务返回 Reset 卡时，显示可用数量及每张卡的到期时间。
 - 只在 Codex Desktop 位于前台时显示；切换应用、最小化或退出后立即隐藏。
 - 不抢焦点，鼠标可穿透悬浮层继续操作 Codex。
 - 支持高 DPI、多显示器、单实例和登录时自动启动。
 - Windows 通知区域和 macOS 菜单栏提供刷新、位置微调、CLI 选择、短诊断码、隐私说明和退出。
-- 使用 Codex 官方公开的本地 App Server `account/rateLimits/read` 接口；不截图、不读取会话标题或浏览器 Cookie，也不会消耗 Reset 卡。
+- 使用 Codex 官方公开的本地 App Server `account/rateLimits/read` 与 `account/usage/read` 接口；不截图、不读取会话标题或浏览器 Cookie，也不会消耗 Reset 卡。
 - 可选的匿名每日心跳默认未配置，只有用户主动开启后才会发送，详见[隐私说明](PRIVACY.zh-CN.md)。
 
 ## 支持范围
 
-| 平台                    | 支持状态                                | 安装包              |
-| ----------------------- | --------------------------------------- | ------------------- |
-| Windows 10/11 x64       | 已在 Windows 11 真机验证                | Setup EXE、便携 ZIP |
-| macOS 12+ Apple Silicon | 自动构建和双架构验证；等待 Mac 真机验收 | arm64 DMG、ZIP      |
-| macOS 12+ Intel         | 自动构建和双架构验证；等待 Mac 真机验收 | x64 DMG、ZIP        |
+| 平台                    | 支持状态                                                       | 分发方式            |
+| ----------------------- | -------------------------------------------------------------- | ------------------- |
+| Windows 10/11 x64       | 已在 Windows 11 真机完成打包、安装、运行与卸载验证             | Setup EXE、便携 ZIP |
+| macOS 12+ Apple Silicon | 在 GitHub 托管的 macOS 14 环境完成构建与包内自检；不是发布目标 | 仅源码/CI 验证      |
+| macOS 12+ Intel         | 已验证通用原生辅助程序和 x64 包结构；不是发布目标              | 仅源码/CI 验证      |
+
+0.4.0 仅分发 Windows 安装包。macOS 兼容代码和自动验证仍然保留，但 Release 不附带 macOS 安装包。
 
 Linux 没有当前官方 Codex Desktop 应用，因此本项目不发布 Linux 安装包。Linux 用户可直接使用官方 Codex CLI。
 
@@ -50,20 +58,17 @@ Linux 没有当前官方 Codex Desktop 应用，因此本项目不发布 Linux �
 
 也可以下载 `CodexQuotaOverlay-Windows-Portable-<版本>-x64.zip`，完整解压到固定目录后运行。
 
-### macOS
+### macOS 兼容性
 
-1. Apple Silicon（M1/M2/M3/M4 等）下载 `arm64.dmg`；Intel Mac 下载 `x64.dmg`。
-2. 打开 DMG，把 **Codex Quota Overlay** 拖入 Applications。
-3. 当前测试包尚未使用 Apple Developer ID 公证。第一次运行请在 Finder 中右键应用并选择“打开”，再确认一次。
-4. 应用只显示在菜单栏，不显示 Dock 图标。
+0.4.0 不分发 macOS 二进制。维护流程仍会在 GitHub 的 macOS 环境编译通用原生辅助程序、构建两个架构、校验 DMG 结构，并执行当前宿主架构的包内自检。开发者可使用下方源码构建说明。
 
-如果状态显示 `E01`，从菜单栏选择 **Codex CLI → 手动选择…**，然后选择本机 `codex` 可执行文件。
-
-> Windows 和 macOS 测试包当前都没有商业代码签名。请只从本仓库下载，并用同一版本的 `SHA256SUMS-*.txt` 校验文件完整性。
+> Windows 安装包当前没有商业代码签名。请只从本仓库下载，并使用 `SHA256SUMS-Windows-0.4.0.txt` 校验完整性。
 
 ## 使用与短诊断
 
-保持应用在通知区域或菜单栏运行即可。悬浮条的位置不合适时，用 **位置微调** 每次上下移动 2 px、左右移动 4 px，也可以恢复默认位置。
+保持应用在通知区域或菜单栏运行即可。选择 **打开 Quota Center…** 或双击图标进入完整仪表盘；悬浮条密度、提醒线和可选本地历史保留期都会即时保存。也可以通过 `CodexQuotaOverlay --dashboard` 直接打开仪表盘。
+
+悬浮条的位置不合适时，用 **位置微调** 每次上下移动 2 px、左右移动 4 px，也可以恢复默认位置。
 
 遇到问题时选择 **复制简短诊断信息**。复制内容最多 200 个字符，例如：
 
@@ -82,12 +87,16 @@ E01 | 找不到 Codex CLI
 
 ## 隐私
 
-额度响应只在本机内存中用于绘制。窗口探针只读取前台应用身份和窗口边界，并且主动把标题字段留空。应用不请求屏幕录制来截取内容，也不保存截图或会话信息。
+额度与活跃度数据始终留在本机。窗口探针只读取前台应用身份和窗口边界，并且主动把标题字段留空。应用不请求屏幕录制来截取内容，也不保存截图或会话信息。
+
+额度历史默认仅存在于本次运行。只有用户主动开启持久化后，应用才会把规范化百分比、采样时间、重置时间、窗口时长和经过清洗的限制标识写入 `quota-history.json`；活跃度/Token 汇总不会写进这个文件。
 
 设置文件位置：
 
 - Windows：`%LOCALAPPDATA%\CodexQuotaOverlay\settings.json`
 - macOS：`~/Library/Application Support/CodexQuotaOverlay/settings.json`
+
+可选历史位于设置文件同目录的 `quota-history.json`，可以在 Quota Center 中清空。
 
 完整字段说明见[隐私说明](PRIVACY.zh-CN.md)。
 
@@ -109,13 +118,13 @@ npm test
 npm run dist:mac
 ```
 
-推送标签后，GitHub Actions 会分别在 Windows 与 macOS runner 上测试、打包 x64/arm64 产物、生成 SHA-256，并在两端都成功后才创建 Release。
+推送标签后，GitHub Actions 会运行 Windows 正式打包和 macOS 兼容性验证；两端都成功后才创建 Release，但 Release 只包含 Windows 产物。
 
 项目主页、CI、源码托管和安装包下载全部使用 GitHub Pages、Actions 与 Releases，不要求自定义域名或第三方云账户。公开构建中的可选统计服务仍保持未配置状态。
 
 ## 兼容性
 
-额度来自官方文档中的 [`account/rateLimits/read`](https://learn.chatgpt.com/docs/app-server#6-rate-limits-chatgpt)。Codex 更新较快，解析器会忽略缺失的可选字段。报告问题时只需提供悬浮层版本、Codex 版本和短诊断码，不要上传账户资料或长日志。
+额度来自官方文档中的 [`account/rateLimits/read`](https://learn.chatgpt.com/docs/app-server#rate-limits-chatgpt)，可选活跃度面板使用 `account/usage/read`。Codex 更新较快，两套解析器都会防御性处理缺失或新增字段。报告问题时只需提供悬浮层版本、Codex 版本和短诊断码，不要上传账户资料或长日志。
 
 ## 参与贡献与许可
 

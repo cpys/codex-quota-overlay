@@ -29,9 +29,12 @@ if (-not (Test-Path -LiteralPath $packagedExe)) {
 $selfTestPath = Join-Path ([System.IO.Path]::GetTempPath()) "cqo-self-test-$PID.json"
 try {
     $selfTestProcess = Start-Process -FilePath $packagedExe -ArgumentList "--self-test=$selfTestPath" -PassThru -Wait -WindowStyle Hidden
-    if ($selfTestProcess.ExitCode -ne 0) { throw "Packaged Windows self-test failed with exit code $($selfTestProcess.ExitCode)." }
     if (-not (Test-Path -LiteralPath $selfTestPath)) { throw 'Packaged Windows self-test did not create a result.' }
     $selfTest = Get-Content -Raw -Encoding UTF8 -LiteralPath $selfTestPath | ConvertFrom-Json
+    if ($selfTestProcess.ExitCode -ne 0) {
+        $safeResult = $selfTest | ConvertTo-Json -Compress -Depth 4
+        throw "Packaged Windows self-test failed with exit code $($selfTestProcess.ExitCode): $safeResult"
+    }
     if (-not $selfTest.ok -or -not $selfTest.packaged -or $selfTest.platform -ne 'win32' -or $selfTest.version -ne $version) {
         throw "Packaged Windows self-test returned unexpected data: $($selfTest | ConvertTo-Json -Compress)"
     }

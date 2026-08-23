@@ -24,6 +24,7 @@ body {
 }
 
 #card {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: 43px;
@@ -34,6 +35,7 @@ body {
   box-shadow: 0 5px 18px rgba(0, 0, 0, 0.24);
   color: #f5f6f8;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 #dot {
@@ -50,4 +52,32 @@ body {
   font-weight: 600;
   line-height: 21px;
   letter-spacing: -0.08px;
+}
+
+#meter {
+  position: absolute;
+  right: 12px;
+  bottom: 3px;
+  left: 12px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--accent, #70b2ff) var(--remaining, 0%),
+    rgba(255, 255, 255, 0.08) 0
+  );
+  opacity: 0.78;
+}
+
+#card[data-status='unknown'] #meter {
+  opacity: 0;
+}
+
+#card[data-mode='compact'] {
+  min-height: 39px;
+  padding: 8px 14px;
+}
+
+#card[data-mode='compact'] #text {
+  font-size: 16px;
 }

@@ -11,6 +11,9 @@ function reportSize() {
 window.quotaOverlay.onState((state) => {
   text.textContent = state.text;
   card.style.setProperty('--accent', state.accent);
+  card.style.setProperty('--remaining', Number.isFinite(state.remaining) ? `${state.remaining}%` : '0%');
+  card.dataset.mode = state.mode || 'balanced';
+  card.dataset.status = state.status || 'unknown';
   document.documentElement.lang = state.locale || 'zh-CN';
   requestAnimationFrame(reportSize);
 });

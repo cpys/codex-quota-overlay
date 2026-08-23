@@ -12,9 +12,9 @@ Do not publish exploitable details, tokens, account information, or private logs
 
 - The app runs as the current user and never requires administrator privileges.
 - It launches the locally installed Codex App Server over stdio and does not expose a listening network port.
-- It requests only rate-limit information and never calls the reset-credit consumption method.
+- It requests only read-only rate-limit and aggregate usage information and never calls the reset-credit consumption method.
 - The overlay is non-activating and click-through.
-- The renderer uses Chromium sandboxing, context isolation, no Node integration, a restrictive Content Security Policy, denied navigation/new windows, and sender-validated IPC.
+- Both local renderers use Chromium sandboxing, context isolation, no Node integration, restrictive Content Security Policies, denied navigation/new windows, and dedicated sender/frame-validated IPC bridges.
 - Packaged applications use ASAR integrity validation and restrictive Electron fuses.
 - Native window helpers return only application identity and bounds; title fields are deliberately empty.
 - Diagnostics are sanitized, capped at 200 characters, kept in memory, and never exported as long log files.

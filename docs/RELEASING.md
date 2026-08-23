@@ -15,19 +15,19 @@ Releases are built by GitHub Actions from an immutable `v<version>` tag. Maintai
 Create and push an annotated tag from the reviewed main-branch commit:
 
 ```bash
-git tag -a v0.3.0 -m "Codex Quota Overlay 0.3.0"
-git push origin v0.3.0
+git tag -a v0.4.0 -m "Codex Quota Overlay 0.4.0"
+git push origin v0.4.0
 ```
 
-The release workflow verifies the tag/version match, tests both operating systems, executes the packaged application self-test, creates Windows and macOS packages, generates checksums and a CycloneDX SBOM, attests release artifacts, and publishes a GitHub pre-release. A release remains a pre-release until physical-Mac acceptance is recorded and signing/notarization status is clear.
+The release workflow verifies the tag/version match, builds and self-tests Windows packages, generates checksums and a CycloneDX SBOM, attests every published asset, and creates a stable Windows-only GitHub Release. A separate macOS job still builds both architectures, verifies DMGs and signature structure, and executes the host-architecture package self-test, but does not upload macOS assets. Physical-Mac acceptance is not a release gate for the Windows distribution.
 
 ## Validate
 
 - Download each asset from GitHub rather than relying on workflow artifacts.
 - Verify the matching SHA-256 file.
-- Confirm platform/architecture names on the release page.
-- Install or mount the package on supported hardware and run the primary flow.
+- Confirm the release contains only the expected Windows x64 assets.
+- Install the package on supported Windows hardware and run the primary flow.
 - Record only short diagnostic codes; never attach managed-device screenshots or long logs.
-- Promote the pre-release only after acceptance criteria are satisfied.
+- Confirm the verified stable release is marked as the latest release.
 
 See [SIGNING.md](SIGNING.md) for optional certificate integration.

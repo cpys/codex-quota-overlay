@@ -6,10 +6,10 @@
     <meta name="theme-color" content="#080d11" />
     <meta
       name="description"
-      content="A tiny, privacy-friendly quota overlay for Codex Desktop on Windows and macOS."
+      content="A privacy-friendly Codex quota overlay and local pace dashboard for Windows."
     />
     <meta property="og:title" content="Codex Quota Overlay" />
-    <meta property="og:description" content="Your Codex quota, always in sight." />
+    <meta property="og:description" content="See the limit. Understand the pace. Stay in control." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://cpys.github.io/codex-quota-overlay/" />
     <meta
@@ -43,14 +43,14 @@
     <main id="main">
       <section class="hero" id="top">
         <div class="hero-copy">
-          <h1 data-i18n="heroTitle">Your Codex quota,<br />always in sight.</h1>
+          <h1 data-i18n="heroTitle">See the limit.<br />Understand the pace.</h1>
           <p class="hero-lede" data-i18n="heroLede">
-            A tiny, privacy-friendly overlay for Codex Desktop on Windows and macOS.
+            A glanceable overlay and a local Quota Center for Codex Desktop on Windows.
           </p>
           <div class="hero-actions">
             <a
               class="button button-primary"
-              href="https://github.com/cpys/codex-quota-overlay/releases/tag/v0.3.0"
+              href="https://github.com/cpys/codex-quota-overlay/releases/tag/v0.4.0"
               data-i18n="downloadLatest"
               >Download latest</a
             >
@@ -63,16 +63,16 @@
           </div>
           <dl class="feature-strip">
             <div>
-              <dt data-i18n="featurePlacement">Native placement</dt>
-              <dd data-i18n="featurePlacementBody">Sits beside the conversation title.</dd>
+              <dt data-i18n="featurePlacement">Glance + depth</dt>
+              <dd data-i18n="featurePlacementBody">One line while working. Full context on demand.</dd>
             </div>
             <div>
-              <dt data-i18n="featureLocal">Local by default</dt>
-              <dd data-i18n="featureLocalBody">Quota data stays on your device.</dd>
+              <dt data-i18n="featureLocal">Pace forecast</dt>
+              <dd data-i18n="featureLocalBody">Compare recent burn with a safe pace to reset.</dd>
             </div>
             <div>
-              <dt data-i18n="featurePlatforms">Windows + macOS</dt>
-              <dd data-i18n="featurePlatformsBody">One tiny tool. Two platforms.</dd>
+              <dt data-i18n="featurePlatforms">Private by default</dt>
+              <dd data-i18n="featurePlatformsBody">Session-only history until you opt in.</dd>
             </div>
           </dl>
         </div>
@@ -88,7 +88,7 @@
       </section>
 
       <section class="workflow section" id="how">
-        <h2 data-i18n="workflowTitle">One line. Right where you need it.</h2>
+        <h2 data-i18n="workflowTitle">From a quota number to a usable plan.</h2>
         <ol>
           <li>
             <span class="step-number">1</span>
@@ -97,28 +97,28 @@
           </li>
           <li>
             <span class="step-number">2</span>
-            <h3 data-i18n="step2">Read local quota</h3>
-            <p data-i18n="step2Body">Ask the documented local App Server for rate-limit data.</p>
+            <h3 data-i18n="step2">Read local signals</h3>
+            <p data-i18n="step2Body">Ask the documented local App Server for quota and aggregate activity.</p>
           </li>
           <li>
             <span class="step-number">3</span>
-            <h3 data-i18n="step3">Stay out of the way</h3>
-            <p data-i18n="step3Body">Hide immediately when Codex is no longer active.</p>
+            <h3 data-i18n="step3">Make the pace clear</h3>
+            <p data-i18n="step3Body">Estimate a safe burn rate, forecast risk, then stay out of the way.</p>
           </li>
         </ol>
       </section>
 
       <section class="detail section">
         <div class="detail-copy">
-          <h2 data-i18n="detailTitle">Small by design.<br />Big on clarity.</h2>
+          <h2 data-i18n="detailTitle">One line when busy.<br />A full picture when planning.</h2>
           <p data-i18n="detailBody">
-            Remaining quota, next reset time, and available reset credits appear on one compact line—without
-            another window or context switch.
+            Keep the overlay compact, then open Quota Center for every reported window, reset countdown,
+            recent trend, activity, and a confidence-rated exhaustion forecast.
           </p>
           <ul>
-            <li data-i18n="detailPoint1">Click-through and never takes focus</li>
-            <li data-i18n="detailPoint2">High-DPI and multi-monitor aware</li>
-            <li data-i18n="detailPoint3">Tray or menu-bar placement controls</li>
+            <li data-i18n="detailPoint1">Compact, balanced, and insight overlay modes</li>
+            <li data-i18n="detailPoint2">Optional low-quota and pace-risk alerts</li>
+            <li data-i18n="detailPoint3">Opt-in, bounded local history you can clear anytime</li>
           </ul>
         </div>
         <figure class="detail-preview">
@@ -135,8 +135,8 @@
           <span class="shield" aria-hidden="true">◇</span>
           <h2 data-i18n="privacyTitle">No account scraping.<br />No secrets uploaded.</h2>
           <p data-i18n="privacyBody">
-            Quota reads, foreground detection, and placement run locally. Public builds have no telemetry
-            endpoint configured.
+            Quota reads, forecasts, foreground detection, and placement run locally. History stays in memory
+            unless you explicitly enable a bounded local file.
           </p>
           <p data-i18n="privacyBody2">The site has no analytics, cookies, forms, or tracking pixels.</p>
           <a href="https://github.com/cpys/codex-quota-overlay/blob/main/PRIVACY.md" data-i18n="privacyLink"
@@ -145,7 +145,7 @@
         </div>
 
         <div class="download-panel" id="download">
-          <h2 data-i18n="platformTitle">Choose your platform</h2>
+          <h2 data-i18n="platformTitle">Download for Windows</h2>
           <div class="download-row">
             <div class="platform-mark windows" aria-hidden="true">⊞</div>
             <div>
@@ -154,31 +154,13 @@
             </div>
             <a
               class="button button-download"
-              href="https://github.com/cpys/codex-quota-overlay/releases/download/v0.3.0/CodexQuotaOverlay-Windows-Setup-0.3.0-x64.exe"
-              data-i18n="download"
-              >Download</a
-            >
-          </div>
-          <div class="download-row mac-row">
-            <div class="platform-mark mac" aria-hidden="true">⌘</div>
-            <div>
-              <h3>macOS 12+</h3>
-              <label class="sr-only" for="mac-architecture" data-i18n="architecture">Architecture</label>
-              <select id="mac-architecture" aria-label="macOS architecture">
-                <option value="arm64">Apple Silicon</option>
-                <option value="x64">Intel x64</option>
-              </select>
-            </div>
-            <a
-              class="button button-download"
-              id="mac-download"
-              href="https://github.com/cpys/codex-quota-overlay/releases/download/v0.3.0/CodexQuotaOverlay-mac-0.3.0-arm64.dmg"
+              href="https://github.com/cpys/codex-quota-overlay/releases/download/v0.4.0/CodexQuotaOverlay-Windows-Setup-0.4.0-x64.exe"
               data-i18n="download"
               >Download</a
             >
           </div>
           <p class="download-note" data-i18n="unsignedNote">
-            Preview packages are unsigned. Verify the SHA-256 file on GitHub before opening.
+            The Windows package is unsigned. Verify its SHA-256 file on GitHub before opening.
           </p>
           <a
             class="requirements"

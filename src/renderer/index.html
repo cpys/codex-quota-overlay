@@ -11,9 +11,10 @@
     <title>Codex Quota Overlay</title>
   </head>
   <body>
-    <main id="card" role="status" aria-live="polite">
+    <main id="card" role="status" aria-live="polite" data-status="unknown" data-mode="balanced">
       <span id="dot" aria-hidden="true"></span>
       <span id="text">正在读取额度…</span>
+      <span id="meter" aria-hidden="true"></span>
     </main>
     <script type="module" src="overlay.js"></script>
   </body>

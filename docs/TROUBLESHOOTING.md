@@ -18,6 +18,20 @@
 
 Use **Position adjustment** in the tray/menu-bar menu. Vertical moves are 2 px and horizontal moves are 4 px. Restore defaults before reporting a layout regression, and include display resolution/scaling without sharing a screenshot from a managed device.
 
+## Quota Center is empty or still learning
+
+Open Quota Center by double-clicking the tray/menu-bar icon or choosing **Open Quota Center…**. Quota data is read only while the official Codex Desktop window is open and foregrounded. Burn rate and exhaustion forecasts need at least two usable samples from the same quota cycle, separated by enough time; a new cycle or a counter reset intentionally starts learning again.
+
+The activity panel depends on `account/usage/read`. If that optional method is unavailable in the installed Codex version, the quota panels continue to work and the activity section stays empty. Update Codex before reporting a compatibility problem.
+
+## Local history does not survive restart
+
+This is the privacy-preserving default. In Quota Center, enable **Local history → Persist** and choose 7, 14, 30, or 90 days. Disabling persistence stops new writes but does not silently delete an existing history file; use **Clear** and confirm to remove both session samples and the file.
+
+## Alerts do not appear
+
+Alerts are disabled by default. Enable them in Quota Center or the tray menu, choose a threshold, and confirm that operating-system notifications are allowed for Codex Quota Overlay. Each threshold/risk alert is deliberately shown at most once per quota cycle, so toggling windows or refreshing does not repeat it.
+
 ## macOS says the app cannot be opened
 
 Current preview packages are not Apple-notarized. Download only from the official Releases page, verify the checksum, then right-click the app in Finder and choose **Open**. Do not bypass managed-device policy.
