@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/cpys/codex-quota-overlay?include_prereleases)](https://github.com/cpys/codex-quota-overlay/releases)
 [![License](https://img.shields.io/github/license/cpys/codex-quota-overlay)](LICENSE)
 
-[Website](https://cpys.github.io/codex-quota-overlay/) · [简体中文](README.zh-CN.md) · [Download](https://github.com/cpys/codex-quota-overlay/releases/tag/v0.4.0) · [Privacy](PRIVACY.md) · [Support](SUPPORT.md)
+[Website](https://cpys.github.io/codex-quota-overlay/) · [简体中文](README.zh-CN.md) · [Download](https://github.com/cpys/codex-quota-overlay/releases/tag/v0.4.0) · [Privacy](PRIVACY.md) · [Support](SUPPORT.md) · [AI地带收录](https://aididai.cn/sites/13990.html)
 
 Codex Quota Overlay keeps the current limit beside the Codex conversation title, then turns the same local data into a practical Quota Center with pace, forecast, history, and activity views. The click-through overlay disappears immediately when Codex is no longer active; the dashboard opens only when requested.
 
