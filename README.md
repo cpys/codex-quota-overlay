@@ -68,6 +68,8 @@ No macOS binary is distributed in version 0.4.0. Maintainers still compile the u
 
 Keep the app running in the tray or menu bar. Choose **Open Quota Center…** or double-click the icon for the full dashboard. The dashboard lets you change overlay density, alert thresholds, and optional local-history retention; changes are saved immediately. You can also start it directly with `CodexQuotaOverlay --dashboard`.
 
+Choose **Overlay theme → Dark / Light** from the tray menu or Quota Center. The preference is saved locally and applies immediately, including while waiting for quota. Dark remains the default. This changes only the overlay; it does not automatically follow Codex or the system theme.
+
 If overlay placement needs adjustment, move it vertically by 2 px or horizontally by 4 px from **Position adjustment**, or reset the defaults.
 
 Use **Copy short diagnostics** when reporting a problem. The result is at most 200 characters, for example:

@@ -23,7 +23,7 @@ Version 0.2.0 writes no operational log and provides no long diagnostic export. 
 - Windows: `%LOCALAPPDATA%\CodexQuotaOverlay\settings.json`
 - macOS: `~/Library/Application Support/CodexQuotaOverlay/settings.json`
 
-Settings may contain placement offsets, overlay detail mode, local-history choice and retention, alert choice and threshold, the telemetry choice, a random installation UUID, the last successful heartbeat time, and a manually selected Codex CLI path. All remain local except the heartbeat fields explicitly listed below. Uninstalling does not automatically delete settings.
+Settings may contain placement offsets, overlay detail mode, overlay theme (dark or light), local-history choice and retention, alert choice and threshold, the telemetry choice, a random installation UUID, the last successful heartbeat time, and a manually selected Codex CLI path. All remain local except the heartbeat fields explicitly listed below. Uninstalling does not automatically delete settings.
 
 Optional history is stored beside the settings file:
 

@@ -38,6 +38,36 @@ app
       throw new Error(`Invalid overlay render: ${JSON.stringify(overlayResult)}`);
     }
 
+    for (const theme of ['light', 'dark']) {
+      overlay.webContents.send('overlay:state', {
+        text: '54% · 2h',
+        accent: '#4dd18d',
+        remaining: 54,
+        mode: 'compact',
+        status: 'ready',
+        theme
+      });
+      const result = await overlay.webContents.executeJavaScript(`(async () => {
+        await new Promise(resolve => setTimeout(resolve, 60));
+        const card = document.querySelector('#card');
+        return {
+          theme: document.documentElement.dataset.theme,
+          color: getComputedStyle(card).color,
+          mode: card.dataset.mode,
+          text: document.querySelector('#text').textContent
+        };
+      })()`);
+      const expectedColor = theme === 'light' ? 'rgb(32, 36, 44)' : 'rgb(245, 246, 248)';
+      if (
+        result.theme !== theme ||
+        result.color !== expectedColor ||
+        result.mode !== 'compact' ||
+        result.text !== '54% · 2h'
+      ) {
+        throw new Error(`Invalid overlay theme: ${JSON.stringify(result)}`);
+      }
+    }
+
     const {createPreviewState} = await import('./ui-preview-state.mjs');
     let state = createPreviewState();
     const channels = [
@@ -81,12 +111,17 @@ app
       const button = document.querySelector('[data-mode="insight"]');
       button.click();
       await new Promise((resolve) => setTimeout(resolve, 40));
+      const theme = document.querySelector('#overlay-theme');
+      theme.value = 'light';
+      theme.dispatchEvent(new Event('change'));
+      await new Promise((resolve) => setTimeout(resolve, 40));
       return {
         title: document.title,
         remaining: document.querySelector('#remaining-value')?.textContent,
         windows: document.querySelectorAll('.window-card').length,
         chart: document.querySelectorAll('.chart-line').length,
-        insightSelected: button.getAttribute('aria-pressed')
+        insightSelected: button.getAttribute('aria-pressed'),
+        theme: (await window.quotaCenter.getState()).preferences.overlayTheme
       };
     })()`);
     if (
@@ -94,7 +129,8 @@ app
       dashboardResult.remaining !== '54%' ||
       dashboardResult.windows < 2 ||
       dashboardResult.chart !== 1 ||
-      dashboardResult.insightSelected !== 'true'
+      dashboardResult.insightSelected !== 'true' ||
+      dashboardResult.theme !== 'light'
     ) {
       throw new Error(`Invalid dashboard render: ${JSON.stringify(dashboardResult)}`);
     }

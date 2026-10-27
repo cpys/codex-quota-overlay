@@ -4,6 +4,10 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+### Added
+
+- Persisted dark/light overlay themes, selectable from the tray menu and Quota Center, with dark retained as the default.
+
 ### Planned
 
 - Code-signed Windows installer.

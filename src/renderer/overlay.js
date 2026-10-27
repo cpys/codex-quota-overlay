@@ -14,6 +14,7 @@ window.quotaOverlay.onState((state) => {
   card.style.setProperty('--remaining', Number.isFinite(state.remaining) ? `${state.remaining}%` : '0%');
   card.dataset.mode = state.mode || 'balanced';
   card.dataset.status = state.status || 'unknown';
+  document.documentElement.dataset.theme = state.theme === 'light' ? 'light' : 'dark';
   document.documentElement.lang = state.locale || 'zh-CN';
   requestAnimationFrame(reportSize);
 });

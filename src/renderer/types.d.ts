@@ -9,6 +9,7 @@ declare global {
           accent?: string;
           locale?: string;
           mode?: string;
+          theme?: string;
           remaining?: number | null;
           status?: string;
           text: string;

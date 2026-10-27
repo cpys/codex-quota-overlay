@@ -6,6 +6,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   schemaVersion: 2,
   placement: Object.freeze({x: 0, y: 0}),
   overlayMode: 'balanced',
+  overlayTheme: 'dark',
   history: Object.freeze({enabled: false, retentionDays: 30}),
   alerts: Object.freeze({enabled: false, threshold: 20, paceRisk: true}),
   telemetryEnabled: null,
@@ -73,6 +74,7 @@ export function normalizeSettings(value = {}) {
       y: clampInteger(placementSource.y, -40, 40, 0)
     },
     overlayMode,
+    overlayTheme: value.overlayTheme === 'light' ? 'light' : 'dark',
     history: {
       enabled: historySource.enabled === true,
       retentionDays

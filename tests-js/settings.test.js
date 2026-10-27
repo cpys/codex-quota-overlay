@@ -14,6 +14,7 @@ test('persists only compact user settings', () => {
       placement: {y: -4},
       telemetryEnabled: false,
       overlayMode: 'insight',
+      overlayTheme: 'light',
       history: {enabled: true, retentionDays: 14},
       alerts: {enabled: true, threshold: 30}
     });
@@ -22,6 +23,7 @@ test('persists only compact user settings', () => {
     assert.deepEqual(reloaded.placement, {x: 8, y: -4});
     assert.equal(reloaded.telemetryEnabled, false);
     assert.equal(reloaded.overlayMode, 'insight');
+    assert.equal(reloaded.overlayTheme, 'light');
     assert.deepEqual(reloaded.history, {enabled: true, retentionDays: 14});
     assert.deepEqual(reloaded.alerts, {enabled: true, threshold: 30, paceRisk: true});
   } finally {
@@ -34,6 +36,7 @@ test('normalizes corrupted or unknown settings to a safe schema', () => {
     schemaVersion: 999,
     placement: {x: 900, y: 'bad'},
     overlayMode: 'giant',
+    overlayTheme: 'invalid',
     history: {enabled: 'yes', retentionDays: 365},
     alerts: {enabled: true, threshold: 99, paceRisk: false},
     codexCliPath: 123,
@@ -42,6 +45,7 @@ test('normalizes corrupted or unknown settings to a safe schema', () => {
   assert.equal(normalized.schemaVersion, 2);
   assert.deepEqual(normalized.placement, {x: 80, y: 0});
   assert.equal(normalized.overlayMode, 'balanced');
+  assert.equal(normalized.overlayTheme, 'dark');
   assert.deepEqual(normalized.history, {enabled: false, retentionDays: 30});
   assert.deepEqual(normalized.alerts, {enabled: true, threshold: 20, paceRisk: false});
   assert.equal(normalized.codexCliPath, null);

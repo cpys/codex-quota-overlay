@@ -266,6 +266,7 @@ function renderActivity(state, zh) {
 function renderPreferences(state, zh) {
   const preferences = state.preferences;
   if (!preferences) return;
+  selectElement('overlay-theme').value = preferences.overlayTheme || 'dark';
   for (const button of overlayModeButtons()) {
     button.setAttribute('aria-pressed', String(button.dataset.mode === preferences.overlayMode));
   }
@@ -277,6 +278,9 @@ function renderPreferences(state, zh) {
 }
 
 function bindInteractions() {
+  selectElement('overlay-theme').addEventListener('change', () =>
+    runAction('settings', {overlayTheme: selectElement('overlay-theme').value})
+  );
   element('refresh-button').addEventListener('click', () => runAction('refresh'));
   element('copy-diagnostics-button').addEventListener('click', () => runAction('copy'));
   for (const button of overlayModeButtons()) {
@@ -352,6 +356,9 @@ function localizeStatic(zh) {
     'activity-title': ['Codex 活跃度', 'Codex activity'],
     'preferences-eyebrow': ['偏好设置', 'Preferences'],
     'preferences-title': ['显示、提醒与隐私', 'Display, alerts, and privacy'],
+    'overlay-theme-title': ['悬浮条主题', 'Overlay theme'],
+    'overlay-theme-dark': ['深色', 'Dark'],
+    'overlay-theme-light': ['浅色', 'Light'],
     'overlay-density-title': ['悬浮条信息密度', 'Overlay detail'],
     'overlay-density-description': [
       '精简适合小窗口，洞察模式会加入消耗速度。',

@@ -61,6 +61,7 @@ let latestInsights;
 let lastQuotaUpdatedAt = 0;
 let connectionStatus = 'inactive';
 let dashboardIpcRegistered = false;
+let latestOverlayState;
 
 configureUserDataPath();
 const selfTestPath = process.argv
@@ -294,6 +295,15 @@ function rebuildTrayMenu() {
       ]
     },
     {
+      label: isChinese() ? '悬浮条主题' : 'Overlay theme',
+      submenu: ['dark', 'light'].map((theme) => ({
+        label: theme === 'dark' ? (isChinese() ? '深色' : 'Dark') : isChinese() ? '浅色' : 'Light',
+        type: 'radio',
+        checked: settings.get().overlayTheme === theme,
+        click: () => applyPreferences({overlayTheme: theme})
+      }))
+    },
+    {
       label: isChinese() ? '智能提醒' : 'Smart alerts',
       submenu: [
         {
@@ -508,11 +518,13 @@ function stopRpc() {
 }
 
 function sendOverlayState(state) {
+  latestOverlayState = state;
   if (!overlayWindow || overlayWindow.isDestroyed()) return;
   const payload = {
     text: String(state.text),
     accent: state.accent || '#70b2ff',
     locale,
+    theme: settings?.get().overlayTheme || 'dark',
     mode: state.mode || settings?.get().overlayMode || 'balanced',
     remaining: Number.isFinite(state.remaining) ? state.remaining : null,
     status: state.status || 'unknown'
@@ -690,6 +702,9 @@ function assertDashboardSender(event) {
 
 function filterDashboardPatch(patch) {
   const filtered = {};
+  if (['dark', 'light'].includes(patch?.overlayTheme)) {
+    filtered.overlayTheme = patch.overlayTheme;
+  }
   if (['compact', 'balanced', 'insight'].includes(patch?.overlayMode)) {
     filtered.overlayMode = patch.overlayMode;
   }
@@ -724,7 +739,10 @@ function applyPreferences(patch) {
 }
 
 function renderLatestQuota() {
-  if (!latestQuota) return;
+  if (!latestQuota) {
+    if (latestOverlayState) sendOverlayState(latestOverlayState);
+    return;
+  }
   sendOverlayState(
     quotaView(latestQuota, locale, new Date(), {
       mode: settings.get().overlayMode,
@@ -756,6 +774,7 @@ function dashboardState() {
     preferences: preferences
       ? {
           overlayMode: preferences.overlayMode,
+          overlayTheme: preferences.overlayTheme,
           history: preferences.history,
           alerts: preferences.alerts
         }
