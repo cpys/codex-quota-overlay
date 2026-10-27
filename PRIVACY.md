@@ -16,7 +16,7 @@ The window probe uses only the frontmost app name, process or bundle identity, a
 
 **Copy short diagnostics** copies one error code and short description, capped at 200 characters. The sanitizer removes local paths and long identifiers. Diagnostics exclude usernames, hostnames, accounts, IPs, installation UUIDs, window titles, tokens, quota values, and raw App Server responses.
 
-Version 0.2.0 writes no operational log and provides no long diagnostic export. The last error exists only in process memory. An `overlay.log` left by version 0.1.x is no longer used and can be deleted after exit.
+Quota service failures are now recorded locally in `quota-errors.jsonl` beside `settings.json`. Each entry contains only UTC time, a fixed E01–E05 code, and an allowlisted category (timeout, transport, rpc-error, invalid-response, or unspecified). Error messages, stderr, quota values, account identifiers, paths, URLs, and credentials are never serialized. The file rotates at 64 KiB and retains one previous `.1` file (roughly 128 KiB total). These files are never uploaded; they can be deleted after exit. An `overlay.log` left by version 0.1.x remains unused.
 
 ## Local settings
 

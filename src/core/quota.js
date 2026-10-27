@@ -83,12 +83,18 @@ export function quotaView(snapshot, locale = 'zh-CN', now = new Date(), options 
   }
 
   const riskAccent = insights?.status === 'risk' ? '#ff8a65' : null;
+  if (options.stale) {
+    const time = formatClock(options.updatedAt, locale);
+    pieces.push(isChinese ? `更新失败 · 上次 ${time}` : `Update failed · last ${time}`);
+  }
   return {
     remaining,
     text: pieces.join('  ·  '),
-    accent: riskAccent ?? (remaining > 50 ? '#4dd18d' : remaining > 20 ? '#f6be48' : '#ff6767'),
+    accent: options.stale
+      ? '#f6be48'
+      : (riskAccent ?? (remaining > 50 ? '#4dd18d' : remaining > 20 ? '#f6be48' : '#ff6767')),
     mode,
-    status: insights?.status ?? (remaining > 20 ? 'healthy' : 'low')
+    status: options.stale ? 'stale' : (insights?.status ?? (remaining > 20 ? 'healthy' : 'low'))
   };
 }
 

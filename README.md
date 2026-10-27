@@ -76,7 +76,9 @@ Use **Copy short diagnostics** when reporting a problem. The result is at most 2
 E01 | Codex CLI not found
 ```
 
-Diagnostics exclude usernames, hostnames, paths, accounts, IPs, installation IDs, conversation titles, tokens, and raw quota responses. Version 0.2.0 writes no operational log and offers no long diagnostic export. The last error exists only in memory until exit.
+Diagnostics exclude usernames, hostnames, paths, accounts, IPs, installation IDs, conversation titles, tokens, and raw quota responses. Failed quota reads retain the last successful percentage with an “Update failed” label and its last update time. Each read times out after 15 seconds and retries at most twice, after 2 and 5 seconds, before returning to normal periodic refresh. Overlapping reads are suppressed and stopping the service cancels retries.
+
+Local `quota-errors.jsonl` beside `settings.json` stores only UTC time, a fixed error code, and an allowlisted category (`timeout`, `transport`, `rpc-error`, `invalid-response`, or `unspecified`). It rotates at 64 KiB with one previous file (`.1`), totaling roughly 128 KiB. No raw server messages or stderr are saved or uploaded. Historical quota is not a guarantee of currently available quota.
 
 Common codes:
 

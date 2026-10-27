@@ -16,7 +16,7 @@ Codex 额度悬浮层以本地运行为首要原则。读取额度、识别前�
 
 托盘或菜单栏中的“复制简短诊断信息”只复制一个错误码和短描述，最长 200 个字符。清洗器会移除本地路径和长标识。诊断不包含用户名、主机名、账户、IP、安装 UUID、窗口标题、令牌、额度值或原始 App Server 响应。
 
-0.2.0 起不写运行日志，不支持导出长诊断文件；最后一次错误只存在于进程内存。0.1.x 曾创建的 `%LOCALAPPDATA%\CodexQuotaOverlay\overlay.log` 不再使用，可以在退出应用后手动删除。
+现在会将额度服务失败记录到与 `settings.json` 同目录的本地 `quota-errors.jsonl`。每条仅包含 UTC 时间、固定 E01–E05 错误码及白名单类别（timeout、transport、rpc-error、invalid-response 或 unspecified）。不序列化错误原文、stderr、额度数值、账户标识、路径、URL 或凭据。文件达到 64 KiB 时轮转，仅保留一个 `.1` 旧文件（合计约 128 KiB）。这些文件不会上传，可在退出后删除。0.1.x 的 `overlay.log` 仍不使用。
 
 ## 本地设置
 

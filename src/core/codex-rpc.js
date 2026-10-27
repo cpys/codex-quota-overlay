@@ -22,6 +22,9 @@ export class CodexRpcClient extends EventEmitter {
     this.pendingRateLimitIds = new Set();
     this.pendingUsageIds = new Set();
     this.disposed = false;
+    this.quotaTimer = null;
+    this.retryTimer = null;
+    this.retryAttempt = 0;
   }
 
   get running() {
@@ -43,9 +46,16 @@ export class CodexRpcClient extends EventEmitter {
     }
     this.process.once('error', (error) => this.emit('failure', {code: 'E02', detail: errorDetail(error)}));
     this.process.once('exit', () => {
+      clearTimeout(this.quotaTimer);
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+      this.pendingRateLimitIds.clear();
       if (!this.disposed) this.emit('failure', {code: 'E05'});
     });
     this.process.stderr.resume();
+    this.process.stdin.on?.('error', () => {
+      if (this.pendingRateLimitIds.size) this.#quotaFailed('transport');
+    });
     const lines = readline.createInterface({input: this.process.stdout, crlfDelay: Infinity});
     lines.on('line', (line) => this.#handleLine(line));
     this.#send({
@@ -56,11 +66,34 @@ export class CodexRpcClient extends EventEmitter {
   }
 
   requestRateLimits() {
+    if (this.pendingRateLimitIds.size || this.retryTimer) return false;
+    this.retryAttempt = 0;
+    return this.#readQuota();
+  }
+
+  #readQuota() {
     if (!this.initialized || !this.running) return false;
     const id = ++this.nextRequestId;
     this.pendingRateLimitIds.add(id);
+    this.quotaTimer = setTimeout(() => this.#quotaFailed('timeout'), 15_000);
+    this.quotaTimer.unref?.();
     this.#send({method: 'account/rateLimits/read', id});
     return true;
+  }
+
+  #quotaFailed(reason) {
+    clearTimeout(this.quotaTimer);
+    this.pendingRateLimitIds.clear();
+    const delay = [2000, 5000][this.retryAttempt];
+    if (delay && !this.disposed) {
+      this.retryAttempt++;
+      this.retryTimer = setTimeout(() => {
+        this.retryTimer = null;
+        this.#readQuota();
+      }, delay);
+      this.retryTimer.unref?.();
+    }
+    this.emit('failure', {code: 'E04', detail: reason});
   }
 
   requestUsage() {
@@ -72,6 +105,9 @@ export class CodexRpcClient extends EventEmitter {
   }
 
   stop() {
+    clearTimeout(this.quotaTimer);
+    clearTimeout(this.retryTimer);
+    this.retryTimer = null;
     this.disposed = true;
     this.initialized = false;
     this.pendingRateLimitIds.clear();
@@ -104,13 +140,14 @@ export class CodexRpcClient extends EventEmitter {
     }
     if (this.pendingRateLimitIds.has(message.id)) {
       this.pendingRateLimitIds.delete(message.id);
+      clearTimeout(this.quotaTimer);
       if (message.error) {
-        this.emit('failure', {code: 'E04'});
+        this.#quotaFailed('rpc-error');
         return;
       }
       const snapshot = parseQuotaResult(message.result);
       if (snapshot) this.emit('quota', snapshot);
-      else this.emit('failure', {code: 'E04', detail: 'invalid response'});
+      else this.#quotaFailed('invalid-response');
       return;
     }
     if (this.pendingUsageIds.has(message.id)) {
@@ -128,8 +165,9 @@ export class CodexRpcClient extends EventEmitter {
   #send(message) {
     try {
       this.process?.stdin.write(`${JSON.stringify(message)}\n`);
-    } catch (error) {
-      this.emit('failure', {code: 'E04', detail: error?.code ?? error?.name});
+    } catch (_error) {
+      if (this.pendingRateLimitIds.has(message.id)) this.#quotaFailed('transport');
+      else this.emit('failure', {code: 'E04', detail: 'transport'});
     }
   }
 }

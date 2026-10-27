@@ -4,6 +4,11 @@ All notable changes are documented here. The project follows [Semantic Versionin
 
 ## [Unreleased]
 
+### Fixed
+
+- Preserve last successful quota with an explicit stale label after failures; bound quota reads with a 15-second timeout and two delayed retries.
+- Record only allowlisted failure categories in size-bounded local logs without server messages or account data.
+
 ### Planned
 
 - Code-signed Windows installer.

@@ -23,6 +23,7 @@ import {calculateQuotaInsights} from './core/insights.js';
 import {placeOverlay} from './core/placement.js';
 import {quotaView} from './core/quota.js';
 import {SettingsStore} from './core/settings.js';
+import {writeFailureLog} from './core/failure-log.js';
 import {classifyTarget} from './core/target-window.js';
 import {TelemetryClient} from './core/telemetry.js';
 import {setStartupEnabled, startupEnabled} from './platform/startup.js';
@@ -61,6 +62,7 @@ let latestInsights;
 let lastQuotaUpdatedAt = 0;
 let connectionStatus = 'inactive';
 let dashboardIpcRegistered = false;
+let quotaStale = false;
 
 configureUserDataPath();
 const selfTestPath = process.argv
@@ -447,15 +449,19 @@ function ensureRpc() {
   if (!executable) {
     diagnostics.set('E01');
     setConnectionStatus('error');
-    sendOverlayState({text: diagnosticMessage('E01', locale), accent: '#ff6767'});
+    quotaStale = true;
+    if (latestQuota) renderLatestQuota();
+    else sendOverlayState({text: diagnosticMessage('E01', locale), accent: '#ff6767'});
     return;
   }
-  sendOverlayState({text: isChinese() ? '正在读取额度…' : 'Reading quota…', accent: '#70b2ff'});
+  if (latestQuota) renderLatestQuota();
+  else sendOverlayState({text: isChinese() ? '正在读取额度…' : 'Reading quota…', accent: '#70b2ff'});
   setConnectionStatus('connecting');
   rpc = new CodexRpcClient({executable, version: VERSION});
   rpc.on('quota', (snapshot) => {
     const now = Date.now();
     latestQuota = snapshot;
+    quotaStale = false;
     lastQuotaUpdatedAt = now;
     history.record(snapshot, now);
     latestInsights = calculateQuotaInsights(history.getSamples(), snapshot, now);
@@ -479,9 +485,12 @@ function ensureRpc() {
     broadcastDashboardState();
   });
   rpc.on('failure', (failure) => {
+    writeFailureLog(path.join(app.getPath('userData'), 'quota-errors.jsonl'), failure);
+    quotaStale = true;
     diagnostics.set(failure.code, failure.detail);
     setConnectionStatus('error');
-    sendOverlayState({text: diagnosticMessage(failure.code, locale), accent: '#ff6767'});
+    if (latestQuota) renderLatestQuota();
+    else sendOverlayState({text: diagnosticMessage(failure.code, locale), accent: '#ff6767'});
     broadcastDashboardState();
   });
   rpc.start();
@@ -728,7 +737,9 @@ function renderLatestQuota() {
   sendOverlayState(
     quotaView(latestQuota, locale, new Date(), {
       mode: settings.get().overlayMode,
-      insights: latestInsights
+      insights: latestInsights,
+      stale: quotaStale,
+      updatedAt: lastQuotaUpdatedAt
     })
   );
 }

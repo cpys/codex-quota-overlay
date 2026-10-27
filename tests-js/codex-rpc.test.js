@@ -21,6 +21,61 @@ class FakeProcess extends EventEmitter {
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+test('quota failures retry twice, ignore late replies, and cancel retries on stop', (t) => {
+  t.mock.timers.enable({apis: ['setTimeout']});
+  const process = new FakeProcess();
+  const client = new CodexRpcClient({executable: 'codex', version: 'test', spawnProcess: () => process});
+  const failures = [];
+  const quotas = [];
+  client.on('failure', (failure) => failures.push(failure));
+  client.on('quota', (quota) => quotas.push(quota));
+  client.start();
+  process.stdout.write('{"id":0,"result":{}}\n');
+  const reads = () => process.messages.filter((message) => message.method === 'account/rateLimits/read');
+  assert.equal(reads().length, 1);
+  assert.equal(client.requestRateLimits(), false);
+  t.mock.timers.tick(15000);
+  assert.equal(failures[0].detail, 'timeout');
+  process.stdout.write(
+    JSON.stringify({id: reads()[0].id, result: {rateLimits: {primary: {usedPercent: 1}}}}) + '\n'
+  );
+  assert.equal(quotas.length, 0);
+  t.mock.timers.tick(2000);
+  assert.equal(reads().length, 2);
+  process.stdout.write(JSON.stringify({id: reads()[1].id, error: {message: 'secret'}}) + '\n');
+  t.mock.timers.tick(5000);
+  assert.equal(reads().length, 3);
+  process.stdout.write(JSON.stringify({id: reads()[2].id, result: {}}) + '\n');
+  t.mock.timers.tick(30000);
+  assert.equal(reads().length, 3);
+  assert.equal(failures.length, 3);
+  assert.equal(client.requestRateLimits(), true);
+  process.stdout.write(JSON.stringify({id: reads()[3].id, error: {}}) + '\n');
+  client.stop();
+  t.mock.timers.tick(30000);
+  assert.equal(reads().length, 4);
+});
+
+test('successful retry restores quota and does not issue another retry', (t) => {
+  t.mock.timers.enable({apis: ['setTimeout']});
+  const process = new FakeProcess();
+  const client = new CodexRpcClient({executable: 'codex', version: 'test', spawnProcess: () => process});
+  client.start();
+  process.stdout.write('{"id":0,"result":{}}\n');
+  process.stdout.write('{"id":11,"error":{}}\n');
+  t.mock.timers.tick(2000);
+  let result;
+  client.on('quota', (value) => {
+    result = value;
+  });
+  process.stdout.write('{"id":13,"result":{"rateLimits":{"primary":{"usedPercent":25}}}}\n');
+  assert.equal(result.usedPercent, 25);
+  const count = process.messages.length;
+  t.mock.timers.tick(30000);
+  assert.equal(process.messages.length, count);
+  client.stop();
+});
+
 test('initializes the app server and reads quota plus account activity', async () => {
   const process = new FakeProcess();
   const client = new CodexRpcClient({executable: 'codex', version: 'test', spawnProcess: () => process});

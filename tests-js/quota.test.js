@@ -2,6 +2,24 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {formatCountdown, parseQuotaResult, quotaView} from '../src/core/quota.js';
 
+test('stale quota keeps the last percentage and explicitly marks its timestamp', () => {
+  const snapshot = parseQuotaResult({rateLimits: {primary: {usedPercent: 25, resetsAt: 1900000000}}});
+  const updatedAt = Date.now() - 60000;
+  for (const locale of ['zh-CN', 'en-US']) {
+    const view = quotaView(snapshot, locale, new Date(), {mode: 'compact', stale: true, updatedAt});
+    assert.equal(view.remaining, 75);
+    assert.equal(view.status, 'stale');
+    assert.match(view.text, locale === 'zh-CN' ? /更新失败 · 上次/ : /Update failed · last/);
+    assert.match(
+      view.text,
+      new RegExp(
+        new Intl.DateTimeFormat(locale, {hour: '2-digit', minute: '2-digit', hour12: false}).format(updatedAt)
+      )
+    );
+    assert.notEqual(quotaView(snapshot, locale).status, 'stale');
+  }
+});
+
 test('parses quota and available reset cards into one line', () => {
   const snapshot = parseQuotaResult({
     rateLimits: {primary: {usedPercent: 38.4, resetsAt: 1760000000}},
