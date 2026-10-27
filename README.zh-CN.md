@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/cpys/codex-quota-overlay?include_prereleases)](https://github.com/cpys/codex-quota-overlay/releases)
 [![License](https://img.shields.io/github/license/cpys/codex-quota-overlay)](LICENSE)
 
-[项目主页](https://cpys.github.io/codex-quota-overlay/) · [English](README.md) · [下载](https://github.com/cpys/codex-quota-overlay/releases/tag/v0.4.0) · [隐私说明](PRIVACY.zh-CN.md) · [支持](SUPPORT.md)
+[项目主页](https://cpys.github.io/codex-quota-overlay/) · [English](README.md) · [下载](https://github.com/cpys/codex-quota-overlay/releases/tag/v0.4.0) · [隐私说明](PRIVACY.zh-CN.md) · [支持](SUPPORT.md) · [AI地带收录](https://aididai.cn/sites/13990.html)
 
 Codex 额度悬浮层会把当前限制放在 Codex 会话标题旁，并把同一份本地数据整理成可操作的 Quota Center：消耗速度、预测、趋势、提醒和活跃度集中在一个界面。鼠标可穿透的悬浮条会在 Codex 离开前台时立即隐藏；仪表盘只在用户主动打开时出现。
 
